@@ -23,6 +23,8 @@ public class Main {
         ForestUtils.generateForestClusters(map, 4, 30, 3);
 
         FireUtils.igniteRandomForestCell(map, new java.util.Random());
+        
+        launchJadeAgents(map);
 
         for (int t = 0; t < 15; t++) {
             System.out.println("Time step: " + t);
@@ -31,14 +33,15 @@ public class Main {
             Thread.sleep(1000);
             System.out.println();
         }
-        launchJadeAgents(map);
+        
     }
 
     private static void launchJadeAgents(MapGrid map) {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
+        p.setParameter(Profile.LOCAL_PORT, "2000");  // change from 1099
         AgentContainer container = rt.createMainContainer(p);
-
+    
         try {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
             container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
@@ -46,4 +49,5 @@ public class Main {
             e.printStackTrace();
         }
     }
+    
 }

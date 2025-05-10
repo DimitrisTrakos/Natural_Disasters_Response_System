@@ -73,7 +73,23 @@ public class MapGrid {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 GridCell cell = getCell(x, y);
-                if (cell.isOnFire) {
+    
+                if (cell.hasAgent) {
+                    switch (cell.agentType) {
+                        case "drone":
+                            System.out.print("🚁");
+                            break;
+                        case "firefighter":
+                            System.out.print("🚒");
+                            break;
+                        case "medic":
+                            System.out.print("🚑");
+                            break;
+                        default:
+                            System.out.print("❓ ");
+                            break;
+                    }
+                } else if (cell.isOnFire) {
                     System.out.print("🔥 ");
                 } else if (cell.isForest) {
                     System.out.print("🌲 ");

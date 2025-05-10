@@ -20,7 +20,37 @@ public class ForestUtils {
         }
     }
 
+    // public static void generateForestClusters(MapGrid map, int numClusters, int treesPerCluster, int radius) {
+    //     Random rand = new Random();
+    //     int width = map.getWidth();
+    //     int height = map.getHeight();
+
+    //     for (int i = 0; i < numClusters; i++) {
+    //         int centerX = rand.nextInt(width);
+    //         int centerY = rand.nextInt(height);
+
+    //         for (int j = 0; j < treesPerCluster; j++) {
+    //             int dx = rand.nextInt(2 * radius + 1) - radius;
+    //             int dy = rand.nextInt(2 * radius + 1) - radius;
+
+    //             int x = centerX + dx;
+    //             int y = centerY + dy;
+
+    //             if (x >= 0 && x < width && y >= 0 && y < height) {
+    //                 GridCell cell = map.getCell(x, y);
+    //                 if (cell != null) {
+    //                     cell.isForest = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     public static void generateForestClusters(MapGrid map, int numClusters, int treesPerCluster, int radius) {
+        if (radius <= 0) {
+            System.out.println("Error: radius must be positive.");
+            return; // Exit the method if radius is invalid
+        }
+        
         Random rand = new Random();
         int width = map.getWidth();
         int height = map.getHeight();
@@ -50,9 +80,8 @@ public class ForestUtils {
             }
         }
     }
+
     
-
-
     public static boolean checkForDenseForest(MapGrid map, int x, int y, int radius) {
         int treesFound = 0;
         for (int dx = -radius; dx <= radius; dx++) {
