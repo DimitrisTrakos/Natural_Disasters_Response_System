@@ -1,7 +1,7 @@
 package utils;
-import mapGrid.MapGrid;
-import mapGrid.GridCell;
 import java.util.Random;
+import mapGrid.GridCell;
+import mapGrid.MapGrid;
 public class ForestUtils {
 
     public static void generateForest(MapGrid map, int numTrees) {
@@ -24,27 +24,34 @@ public class ForestUtils {
         Random rand = new Random();
         int width = map.getWidth();
         int height = map.getHeight();
-
+    
         for (int i = 0; i < numClusters; i++) {
+            // Randomly choose a center point for the cluster
             int centerX = rand.nextInt(width);
             int centerY = rand.nextInt(height);
-
+    
+            // Generate the trees around the center
             for (int j = 0; j < treesPerCluster; j++) {
+                // Randomly pick an offset (dx, dy) within a radius from the center
                 int dx = rand.nextInt(2 * radius + 1) - radius;
                 int dy = rand.nextInt(2 * radius + 1) - radius;
-
+    
                 int x = centerX + dx;
                 int y = centerY + dy;
-
+    
+                // Ensure the x, y coordinates are within bounds
                 if (x >= 0 && x < width && y >= 0 && y < height) {
                     GridCell cell = map.getCell(x, y);
                     if (cell != null) {
+                        // Mark this cell as a forest cell
                         cell.isForest = true;
                     }
                 }
             }
         }
     }
+    
+
 
     public static boolean checkForDenseForest(MapGrid map, int x, int y, int radius) {
         int treesFound = 0;
