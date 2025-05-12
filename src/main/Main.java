@@ -1,12 +1,21 @@
 package main;
+
+import jade.core.Profile;
+import jade.core.ProfileImpl;
+import jade.core.Runtime;
+import jade.wrapper.AgentContainer;
+import jade.wrapper.AgentController;
+import jade.wrapper.StaleProxyException;
 import mapGrid.MapGrid;
-import utils.FireUtils;
 import utils.ForestUtils;
+import utils.FireUtils;
+import jade.wrapper.ContainerController;
 
 public class Main {
+
     public static void main(String[] args) throws InterruptedException {
-        int width = 20;
-        int height = 20;
+        int width = 7;
+        int height = 7;
 
         MapGrid map = new MapGrid(width, height);
 
@@ -15,6 +24,8 @@ public class Main {
         ForestUtils.generateForestClusters(map, 4, 30, 3);
 
         FireUtils.igniteRandomForestCell(map, new java.util.Random());
+        
+        launchJadeAgents(map);
 
         for (int t = 0; t < 15; t++) {
             System.out.println("Time step: " + t);
@@ -23,5 +34,24 @@ public class Main {
             Thread.sleep(1000);
             System.out.println();
         }
+        
     }
+
+    private static void launchJadeAgents(MapGrid map) {
+        Runtime rt = Runtime.instance();
+        Profile p = new ProfileImpl();
+        p.setParameter(Profile.LOCAL_PORT, "2002");
+        // change from 1099
+        AgentContainer container = rt.createMainContainer(p);
+
+        try {
+            container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
+            container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
+            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map}).start();
+
+        } catch (StaleProxyException e) {
+            e.printStackTrace();
+        }
+    }
+    
 }
