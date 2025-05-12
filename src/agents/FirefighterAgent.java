@@ -7,7 +7,7 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.*;
 import jade.domain.FIPAException;
 import jade.core.behaviours.TickerBehaviour;
-import jade.core.MessageTemplate;
+import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import mapGrid.MapGrid;
 import mapGrid.GridCell;
@@ -52,7 +52,8 @@ public class FirefighterAgent extends Agent {
         }
 
         this.x = 0;
-        this.y = 0;
+        this.y = map.getHeight()- 1; 
+        // Start at bottom left corner
         map.getCell(x, y).hasAgent = true;
         map.getCell(x, y).agentType = "firefighter";
 

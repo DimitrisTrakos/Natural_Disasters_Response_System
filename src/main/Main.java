@@ -41,14 +41,13 @@ public class Main {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
         p.setParameter(Profile.LOCAL_PORT, "2002");
-        ContainerController cc = rt.createMainContainer(p);
         // change from 1099
-		AgentController ac;
-    
+        AgentContainer container = rt.createMainContainer(p);
+
         try {
-            ac=cc.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
-            ac=cc.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
-            ac=cc.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map}).start();
+            container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
+            container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
+            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map}).start();
 
         } catch (StaleProxyException e) {
             e.printStackTrace();
