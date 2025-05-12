@@ -9,12 +9,16 @@ import jade.wrapper.StaleProxyException;
 import mapGrid.MapGrid;
 import utils.ForestUtils;
 import utils.FireUtils;
+<<<<<<< HEAD
+=======
+import jade.wrapper.ContainerController;
+>>>>>>> main
 
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 20;
-        int height = 20;
+        int width = 7;
+        int height = 7;
 
         MapGrid map = new MapGrid(width, height);
 
@@ -39,15 +43,31 @@ public class Main {
     private static void launchJadeAgents(MapGrid map) {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
+<<<<<<< HEAD
         p.setParameter(Profile.LOCAL_PORT, "2000");  // change from 1099
         AgentContainer container = rt.createMainContainer(p);
     
         try {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
             container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
+=======
+        p.setParameter(Profile.LOCAL_PORT, "2002");
+        // change from 1099
+        AgentContainer container = rt.createMainContainer(p);
+
+        try {
+            container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
+            container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map}).start();
+            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map}).start();
+
+>>>>>>> main
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
     }
     
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

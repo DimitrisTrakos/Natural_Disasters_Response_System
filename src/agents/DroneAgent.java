@@ -169,4 +169,8 @@ public class DroneAgent extends Agent {
             oldCell.agentType = "";
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

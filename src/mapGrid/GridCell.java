@@ -20,4 +20,3 @@ public class GridCell {
         this.isOnFire = false;
     }
 }
-
