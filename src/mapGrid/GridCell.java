@@ -9,6 +9,7 @@ public class GridCell {
 
     public boolean isForest;
     public boolean isOnFire;
+    public boolean isHouse;
 
     public GridCell() {
         this.isObstacle = false;
@@ -18,5 +19,6 @@ public class GridCell {
         this.riskLevel = 0;
         this.isForest = false;
         this.isOnFire = false;
+        this.isHouse = false;
     }
 }

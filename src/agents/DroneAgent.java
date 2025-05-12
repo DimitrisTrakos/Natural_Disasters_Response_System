@@ -66,13 +66,14 @@ public class DroneAgent extends Agent {
 
                     for (int dy = -1; dy <= 1; dy++) {
                         for (int dx = -1; dx <= 1; dx++) {
-                            if (dx == 0 && dy == 0) continue;
+                            if (dx == 0 && dy == 0)
+                                continue;
 
                             int neighborX = x + dx;
                             int neighborY = y + dy;
 
                             if (neighborX >= 0 && neighborX < map.getWidth() &&
-                                neighborY >= 0 && neighborY < map.getHeight()) {
+                                    neighborY >= 0 && neighborY < map.getHeight()) {
 
                                 GridCell neighborCell = map.getCell(neighborX, neighborY);
                                 if (neighborCell != null && neighborCell.isOnFire) {
@@ -93,7 +94,8 @@ public class DroneAgent extends Agent {
                                 DFAgentDescription[] result = DFService.search(myAgent, template);
                                 if (result.length > 0) {
                                     dataCenterAID = result[0].getName();
-                                    System.out.println(getLocalName() + " found DataCenter agent: " + dataCenterAID.getLocalName());
+                                    System.out.println(getLocalName() + " found DataCenter agent: "
+                                            + dataCenterAID.getLocalName());
                                 } else {
                                     System.out.println(getLocalName() + ": No DataCenter found.");
                                 }
@@ -169,8 +171,4 @@ public class DroneAgent extends Agent {
             oldCell.agentType = "";
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main

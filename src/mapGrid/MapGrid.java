@@ -16,16 +16,35 @@ public class MapGrid {
     }
 
     private void initializeGrid() {
+
+        int totalCells = width * height;
+        int houseCount = (int) (totalCells * 0.05); // 5% of the map
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 grid[y][x] = new GridCell();
             }
         }
+
+        // Randomly place houses
+        for (int i = 0; i < houseCount; i++) {
+            int x, y;
+            do {
+                x = random.nextInt(width);
+                y = random.nextInt(height);
+            } while (grid[y][x].isHouse); // Ensure unique positions
+            grid[y][x].isHouse = true;
+            grid[y][x].isForest = false; // Optional: override forest if needed
+        }
     }
 
-    public int getWidth() { return width; }
+    public int getWidth() {
+        return width;
+    }
 
-    public int getHeight() { return height; }
+    public int getHeight() {
+        return height;
+    }
 
     public GridCell getCell(int x, int y) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -42,7 +61,7 @@ public class MapGrid {
                 GridCell cell = getCell(x, y);
                 if (cell.isOnFire) {
                     int[][] directions = {
-                        {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+                            { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }
                     };
 
                     for (int[] dir : directions) {
@@ -51,7 +70,7 @@ public class MapGrid {
                         GridCell neighbor = getCell(nx, ny);
 
                         if (neighbor != null && neighbor.isForest && !neighbor.isOnFire) {
-                            if (random.nextDouble() < 0.4) {
+                            if (random.nextDouble() < 0.2) {
                                 newFires[ny][nx] = true;
                             }
                         }
@@ -70,34 +89,39 @@ public class MapGrid {
     }
 
     public void printMap() {
+        System.out.println("_________________________________");
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 GridCell cell = getCell(x, y);
-    
+
                 if (cell.hasAgent) {
                     switch (cell.agentType) {
                         case "drone":
-                            System.out.print("🚁");
+                            System.out.printf("%-3s", "🚁");
                             break;
                         case "firefighter":
-                            System.out.print("🚒");
+                            System.out.printf("%-3s", "🚒");
                             break;
                         case "medic":
-                            System.out.print("🚑");
+                            System.out.printf("%-3s", "🚑");
                             break;
                         default:
-                            System.out.print("❓ ");
+                            System.out.printf("%-3s", "❓");
                             break;
                     }
                 } else if (cell.isOnFire) {
-                    System.out.print("🔥 ");
+                    System.out.printf("%-3s", "🔥");
+                } else if (cell.isHouse) {
+                    System.out.printf("%-3s", "🏠");
                 } else if (cell.isForest) {
-                    System.out.print("🌲 ");
+                    System.out.printf("%-2s", "🌲");
                 } else {
-                    System.out.print("⬜ ");
+                    System.out.printf("%-3s", "⬜");
                 }
             }
             System.out.println();
         }
+        System.out.println("_________________________________");
     }
+
 }
