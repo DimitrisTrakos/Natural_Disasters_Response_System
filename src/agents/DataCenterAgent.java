@@ -1,20 +1,12 @@
 package agents;
 
 import jade.core.Agent;
-<<<<<<< HEAD
-import jade.lang.acl.ACLMessage;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-=======
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.*;
 import jade.core.behaviours.CyclicBehaviour;
->>>>>>> main
 
 public class DataCenterAgent extends Agent {
 
@@ -22,22 +14,13 @@ public class DataCenterAgent extends Agent {
     protected void setup() {
         System.out.println(getLocalName() + " launched.");
 
-<<<<<<< HEAD
-        // Register this agent with the Directory Facilitator (DF)
-=======
         // Register this agent with the DF
->>>>>>> main
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
 
         ServiceDescription sd = new ServiceDescription();
-<<<<<<< HEAD
-        sd.setType("data-center"); // Service type other agents will search for
-        sd.setName("Fire-Data-Service"); // A friendly name for the service
-=======
         sd.setType("data-center");
         sd.setName("Fire-Data-Service");
->>>>>>> main
         dfd.addServices(sd);
 
         try {
@@ -48,18 +31,11 @@ public class DataCenterAgent extends Agent {
             e.printStackTrace();
         }
 
-<<<<<<< HEAD
-        addBehaviour(new jade.core.behaviours.CyclicBehaviour() {
-=======
         addBehaviour(new CyclicBehaviour() {
->>>>>>> main
             @Override
             public void action() {
                 ACLMessage msg = receive();
                 if (msg != null) {
-<<<<<<< HEAD
-                    System.out.println("DataCenter received fire data: " + msg.getContent());
-=======
                     String content = msg.getContent();
                     System.out.println("DataCenter received fire data:\n" + content);
 
@@ -82,7 +58,6 @@ public class DataCenterAgent extends Agent {
                     } catch (FIPAException e) {
                         e.printStackTrace();
                     }
->>>>>>> main
                 } else {
                     block();
                 }
@@ -92,10 +67,6 @@ public class DataCenterAgent extends Agent {
 
     @Override
     protected void takeDown() {
-<<<<<<< HEAD
-        // Unregister from DF when the agent is killed
-=======
->>>>>>> main
         try {
             DFService.deregister(this);
             System.out.println(getLocalName() + " deregistered from DF.");
