@@ -119,6 +119,8 @@ public class DroneAgent extends Agent {
                 block(1000);
             }
 
+            private boolean scanningDown = true; // true = top to bottom, false = bottom to top
+
             private void moveZigZag() {
                 int newX = x;
                 int newY = y;
@@ -126,36 +128,58 @@ public class DroneAgent extends Agent {
                 if (movingRight) {
                     if (x + 1 < map.getWidth()) {
                         newX = x + 1;
-                    } else if (y + 1 < map.getHeight()) {
-                        newY = y + 1;
-                        movingRight = false;
                     } else {
-                        // End of map reached: restart scanning
-                        System.out.println(getLocalName() + " completed map scan. Restarting...");
-                        clearOldPosition();
-                        x = 0;
-                        y = 0;
-                        movingRight = true;
-                        return;
+                        if (scanningDown) {
+                            if (y + 1 < map.getHeight()) {
+                                newY = y + 1;
+                                movingRight = false;
+                            } else {
+                                // Bottom reached: start scanning up
+                                scanningDown = false;
+                                movingRight = false;
+                                return;
+                            }
+                        } else {
+                            if (y - 1 >= 0) {
+                                newY = y - 1;
+                                movingRight = false;
+                            } else {
+                                // Top reached: start scanning down
+                                scanningDown = true;
+                                movingRight = false;
+                                return;
+                            }
+                        }
                     }
                 } else {
                     if (x - 1 >= 0) {
                         newX = x - 1;
-                    } else if (y + 1 < map.getHeight()) {
-                        newY = y + 1;
-                        movingRight = true;
                     } else {
-                        // End of map reached: restart scanning
-                        System.out.println(getLocalName() + " completed map scan. Restarting...");
-                        clearOldPosition();
-                        x = 0;
-                        y = 0;
-                        movingRight = true;
-                        return;
+                        if (scanningDown) {
+                            if (y + 1 < map.getHeight()) {
+                                newY = y + 1;
+                                movingRight = true;
+                            } else {
+                                // Bottom reached: start scanning up
+                                scanningDown = false;
+                                movingRight = true;
+                                return;
+                            }
+                        } else {
+                            if (y - 1 >= 0) {
+                                newY = y - 1;
+                                movingRight = true;
+                            } else {
+                                // Top reached: start scanning down
+                                scanningDown = true;
+                                movingRight = true;
+                                return;
+                            }
+                        }
                     }
                 }
             
-                clearOldPosition();
+                clearOldPosition();  // this will respect firefighter presence (handled separately)
                 x = newX;
                 y = newY;
                 System.out.println(getLocalName() + " moved to (" + x + "," + y + ")");
@@ -175,21 +199,18 @@ public class DroneAgent extends Agent {
 
     private void updateMap() {
         GridCell cell = map.getCell(x, y);
-        cell.hasAgent = true;
-        cell.agentType = "drone";
+        if (!"firefighter".equals(cell.agentType)) {
+            cell.hasAgent = true;
+            cell.agentType = "drone";
+        }
         map.printMap();
-
-
     }
 
     private void clearOldPosition() {
         GridCell oldCell = map.getCell(x, y);
-        if (oldCell != null) {
-            // Only clear the cell if it was occupied by a drone
-            if ("drone".equals(oldCell.agentType)) {
-                oldCell.hasAgent = false;
-                oldCell.agentType = "";
-            }
+        if (oldCell != null && !"firefighter".equals(oldCell.agentType)) {
+            oldCell.hasAgent = false;
+            oldCell.agentType = "";
         }
     }
 }
