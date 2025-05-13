@@ -60,10 +60,9 @@ public class AStarPathfinder {
                 int nx = current.x + dir[0];
                 int ny = current.y + dir[1];
 
-                // if (!map(nx, ny)) continue;
+                if (!map.inBounds(nx, ny)) continue;
 
                 GridCell cell = map.getCell(nx, ny);
-                if (cell.isOnFire) continue; // optional: firefighter can't walk into fire
 
                 Node neighbor = new Node(nx, ny, current.g + 1, heuristic(nx, ny, goalX, goalY), current);
                 if (closed.contains(neighbor)) continue;

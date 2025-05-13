@@ -52,8 +52,8 @@ public class FirefighterAgent extends Agent {
         }
 
         this.x = 0;
-        this.y = map.getHeight()- 1; 
-        // Start at bottom left corner
+        this.y = map.getHeight() - 1; // Start at bottom-left corner
+        System.out.println(getLocalName() + " positioned at (" + x + "," + y + ")");
         map.getCell(x, y).hasAgent = true;
         map.getCell(x, y).agentType = "firefighter";
 
@@ -92,9 +92,7 @@ public class FirefighterAgent extends Agent {
 
                     if (current.isOnFire) {
                         current.isOnFire = false;
-                        current.isForest = false; // Extinguish fire
                         System.out.println(getLocalName() + " extinguished fire at (" + x + "," + y + ")");
-                        pathToFire.clear(); // Stop moving after putting out the fire
                     }
                 }
 
@@ -105,7 +103,7 @@ public class FirefighterAgent extends Agent {
                     if (pathToFire.isEmpty()) {
                         System.out.println(getLocalName() + ": No path to fire at (" + firePos[0] + "," + firePos[1] + ")");
                     } else {
-                        System.out.println(getLocalName() + ": Path to fire calculated.");
+                        System.out.println(getLocalName() + ": Path to fire (" + firePos[0] + "," + firePos[1] + ")" + "calculated.");
                     }
                 }
 
