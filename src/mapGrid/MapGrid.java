@@ -97,26 +97,26 @@ public class MapGrid {
                 if (cell.hasAgent) {
                     switch (cell.agentType) {
                         case "drone":
-                            System.out.printf("%-3s", "🚁");
+                            System.out.printf("%-2s", "🚁");
                             break;
                         case "firefighter":
-                            System.out.printf("%-3s", "🚒");
+                            System.out.printf("%-2s", "🚒");
                             break;
                         case "medic":
-                            System.out.printf("%-3s", "🚑");
+                            System.out.printf("%-2s", "🚑");
                             break;
                         default:
                             System.out.printf("%-3s", "❓");
                             break;
                     }
                 } else if (cell.isOnFire) {
-                    System.out.printf("%-3s", "🔥");
+                    System.out.printf("%-2s", "🔥");
                 } else if (cell.isHouse) {
-                    System.out.printf("%-3s", "🏠");
+                    System.out.printf("%-2s", "🏠");
                 } else if (cell.isForest) {
                     System.out.printf("%-2s", "🌲");
                 } else {
-                    System.out.printf("%-3s", "⬜");
+                    System.out.printf("%-3s", "▫️");
                 }
             }
             System.out.println();

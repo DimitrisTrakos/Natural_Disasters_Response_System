@@ -14,8 +14,8 @@ import jade.wrapper.ContainerController;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 7;
-        int height = 7;
+        int width = 20;
+        int height = 20;
 
         MapGrid map = new MapGrid(width, height);
 
