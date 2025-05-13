@@ -88,8 +88,8 @@ public class MapGrid {
         }
     }
 
-    public void printMap() {
-        System.out.println("_________________________________");
+    public synchronized void printMap() {
+        System.out.println("_________________________________\n");
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 GridCell cell = getCell(x, y);
@@ -97,31 +97,33 @@ public class MapGrid {
                 if (cell.hasAgent) {
                     switch (cell.agentType) {
                         case "drone":
-                            System.out.printf("%-2s", "🚁");
+                            System.out.printf("🚁 ");
                             break;
                         case "firefighter":
-                            System.out.printf("%-2s", "🚒");
+                            System.out.printf("🚒 ");
                             break;
                         case "medic":
-                            System.out.printf("%-2s", "🚑");
+                            System.out.printf("🚑 ");
                             break;
                         default:
-                            System.out.printf("%-3s", "❓");
+                            System.out.printf("❓ ");
                             break;
                     }
                 } else if (cell.isOnFire) {
-                    System.out.printf("%-2s", "🔥");
+                    System.out.printf("🔥 ");
                 } else if (cell.isHouse) {
-                    System.out.printf("%-2s", "🏠");
+                    System.out.printf("🏠 ");
                 } else if (cell.isForest) {
-                    System.out.printf("%-2s", "🌲");
+                    System.out.printf("🌲 ");
                 } else {
-                    System.out.printf("%-3s", "▫️");
+                    System.out.printf("▫️ ");
                 }
             }
             System.out.println();
         }
-        System.out.println("_________________________________");
+        System.out.println("_________________________________\n");
     }
-
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < width && y >= 0 && y < height;
+    }
 }

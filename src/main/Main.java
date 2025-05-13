@@ -14,8 +14,8 @@ import jade.wrapper.ContainerController;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 20;
-        int height = 20;
+        int width = 5;
+        int height = 5;
 
         MapGrid map = new MapGrid(width, height);
 
@@ -27,13 +27,11 @@ public class Main {
 
         launchJadeAgents(map);
 
-        for (int t = 0; t < 15; t++) {
-            System.out.println("Time step: " + t);
+        
             map.printMap();
             map.spreadFire();
-            Thread.sleep(1000);
             System.out.println();
-        }
+        
 
     }
 

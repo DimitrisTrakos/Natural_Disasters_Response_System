@@ -122,13 +122,21 @@ public class DroneAgent extends Agent {
             private void moveZigZag() {
                 int newX = x;
                 int newY = y;
-
+            
                 if (movingRight) {
                     if (x + 1 < map.getWidth()) {
                         newX = x + 1;
                     } else if (y + 1 < map.getHeight()) {
                         newY = y + 1;
                         movingRight = false;
+                    } else {
+                        // End of map reached: restart scanning
+                        System.out.println(getLocalName() + " completed map scan. Restarting...");
+                        clearOldPosition();
+                        x = 0;
+                        y = 0;
+                        movingRight = true;
+                        return;
                     }
                 } else {
                     if (x - 1 >= 0) {
@@ -136,9 +144,17 @@ public class DroneAgent extends Agent {
                     } else if (y + 1 < map.getHeight()) {
                         newY = y + 1;
                         movingRight = true;
+                    } else {
+                        // End of map reached: restart scanning
+                        System.out.println(getLocalName() + " completed map scan. Restarting...");
+                        clearOldPosition();
+                        x = 0;
+                        y = 0;
+                        movingRight = true;
+                        return;
                     }
                 }
-
+            
                 clearOldPosition();
                 x = newX;
                 y = newY;
@@ -162,13 +178,18 @@ public class DroneAgent extends Agent {
         cell.hasAgent = true;
         cell.agentType = "drone";
         map.printMap();
+
+
     }
 
     private void clearOldPosition() {
         GridCell oldCell = map.getCell(x, y);
         if (oldCell != null) {
-            oldCell.hasAgent = false;
-            oldCell.agentType = "";
+            // Only clear the cell if it was occupied by a drone
+            if ("drone".equals(oldCell.agentType)) {
+                oldCell.hasAgent = false;
+                oldCell.agentType = "";
+            }
         }
     }
 }
