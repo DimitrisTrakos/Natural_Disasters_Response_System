@@ -1,27 +1,23 @@
 package agents;
 
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.*;
 import jade.domain.FIPAException;
-import jade.core.behaviours.TickerBehaviour;
-import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
+import java.util.List;
 import mapGrid.MapGrid;
 import mapGrid.GridCell;
 import utils.AStarPathfinder;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
 public class FirefighterAgent extends Agent {
     private MapGrid map;
     private int x, y;
-    private Queue<int[]> fireQueue = new LinkedList<>();
+    private List<int[]> fireList = new ArrayList<>();
     private List<int[]> pathToFire = new ArrayList<>();
-    private boolean moving = false;
 
     @Override
     protected void setup() {
@@ -57,10 +53,11 @@ public class FirefighterAgent extends Agent {
         map.getCell(x, y).hasAgent = true;
         map.getCell(x, y).agentType = "firefighter";
 
-        // Listen for fire reports
+        // Behavior to handle fire reports and move
         addBehaviour(new TickerBehaviour(this, 1000) {
             @Override
             protected void onTick() {
+                // Receive fire alerts
                 MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
                 ACLMessage msg = receive(mt);
                 if (msg != null) {
@@ -71,12 +68,18 @@ public class FirefighterAgent extends Agent {
                             String[] coords = line.replaceAll("[^0-9,]", "").split(",");
                             int fx = Integer.parseInt(coords[0]);
                             int fy = Integer.parseInt(coords[1]);
-                            fireQueue.add(new int[]{fx, fy});
+
+                            boolean alreadyReported = fireList.stream()
+                                    .anyMatch(f -> f[0] == fx && f[1] == fy);
+
+                            if (!alreadyReported) {
+                                fireList.add(new int[]{fx, fy});
+                            }
                         }
                     }
                 }
 
-                // Move along path if set
+                // Move along path if we have one
                 if (!pathToFire.isEmpty()) {
                     map.getCell(x, y).hasAgent = false;
                     map.getCell(x, y).agentType = "";
@@ -96,17 +99,32 @@ public class FirefighterAgent extends Agent {
                     }
                 }
 
-                // Plan new path if needed
-                if (pathToFire.isEmpty() && !fireQueue.isEmpty()) {
-                    int[] firePos = fireQueue.poll();
-                    pathToFire = AStarPathfinder.findPath(map, x, y, firePos[0], firePos[1]);
-                    if (pathToFire.isEmpty()) {
-                        System.out.println(getLocalName() + ": No path to fire at (" + firePos[0] + "," + firePos[1] + ")");
-                    } else {
-                        System.out.println(getLocalName() + ": Path to fire (" + firePos[0] + "," + firePos[1] + ")" + "calculated.");
+                // Plan new path to nearest fire
+                if (pathToFire.isEmpty() && !fireList.isEmpty()) {
+                    int[] nearestFire = null;
+                    int shortestDistance = Integer.MAX_VALUE;
+
+                    for (int[] firePos : fireList) {
+                        int distance = Math.abs(firePos[0] - x) + Math.abs(firePos[1] - y); // Manhattan Distance
+                        if (distance < shortestDistance) {
+                            shortestDistance = distance;
+                            nearestFire = firePos;
+                        }
+                    }
+
+                    if (nearestFire != null) {
+                        pathToFire = AStarPathfinder.findPath(map, x, y, nearestFire[0], nearestFire[1]);
+                        fireList.remove(nearestFire);
+
+                        if (pathToFire.isEmpty()) {
+                            System.out.println(getLocalName() + ": No path to fire at (" + nearestFire[0] + "," + nearestFire[1] + ")");
+                        } else {
+                            System.out.println(getLocalName() + ": Path to fire (" + nearestFire[0] + "," + nearestFire[1] + ") calculated.");
+                        }
                     }
                 }
 
+                // Print updated map
                 map.printMap();
             }
         });

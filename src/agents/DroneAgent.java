@@ -52,7 +52,6 @@ public class DroneAgent extends Agent {
         this.y = 0;
         System.out.println(getLocalName() + " positioned at (" + x + "," + y + ")");
         updateMap();
-
         addBehaviour(new CyclicBehaviour() {
             private int step = 0;
 
