@@ -61,7 +61,7 @@ public class DroneAgent extends Agent {
                 moveZigZag();
                 updateMap();
 
-                if (step % 5 == 0) {
+                if (step % 2 == 0) {
                     StringBuilder fireReport = new StringBuilder();
 
                     for (int dy = -1; dy <= 1; dy++) {
@@ -124,7 +124,7 @@ public class DroneAgent extends Agent {
             private void moveZigZag() {
                 int newX = x;
                 int newY = y;
-            
+
                 if (movingRight) {
                     if (x + 1 < map.getWidth()) {
                         newX = x + 1;
@@ -178,11 +178,11 @@ public class DroneAgent extends Agent {
                         }
                     }
                 }
-            
-                clearOldPosition();  // this will respect firefighter presence (handled separately)
+
+                clearOldPosition(); // this will respect firefighter presence (handled separately)
                 x = newX;
                 y = newY;
-                System.out.println(getLocalName() + " moved to (" + x + "," + y + ")");
+                System.out.println("\n" + getLocalName() + " moved to (" + x + "," + y + ")\n");
             }
         });
     }
