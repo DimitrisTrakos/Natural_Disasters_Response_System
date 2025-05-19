@@ -93,32 +93,36 @@ public class MapGrid {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 GridCell cell = getCell(x, y);
-
-                if (cell.hasAgent) {
-                    switch (cell.agentType) {
-                        case "drone":
-                            System.out.printf("🚁 ");
-                            break;
-                        case "firefighter":
-                            System.out.printf("🚒 ");
-                            break;
-                        case "medic":
-                            System.out.printf("🚑 ");
-                            break;
-                        default:
-                            System.out.printf("❓ ");
-                            break;
+                
+                if(cell.hasAgent && cell.agentType.equals("firefighter") && cell.fireFighterExtinguishFire ) 
+                System.out.printf("💧🚒 ");
+                    
+                    else if (cell.hasAgent) {
+                        switch (cell.agentType) {
+                            case "drone":
+                                System.out.printf("🚁 ");
+                                break;
+                            case "firefighter":
+                                System.out.printf("🚒 ");
+                                break;
+                            case "medic":
+                                System.out.printf("🚑 ");
+                                break;
+                            default:
+                                System.out.printf("❓ ");
+                                break;
+                        }
+                    } else if (cell.isOnFire) {
+                        System.out.printf("🔥 ");
+                    } 
+                    else if (cell.isHouse) {
+                        System.out.printf("🏠 ");
+                    } else if (cell.isForest) {
+                        System.out.printf("🌲 ");
+                    } else {
+                        System.out.printf("◻️ ");
                     }
-                } else if (cell.isOnFire) {
-                    System.out.printf("🔥 ");
-                } else if (cell.isHouse) {
-                    System.out.printf("🏠 ");
-                } else if (cell.isForest) {
-                    System.out.printf("🌲 ");
-                } else {
-                    System.out.printf("▫️ ");
                 }
-            }
             System.out.println();
         }
         System.out.println("_________________________________\n");

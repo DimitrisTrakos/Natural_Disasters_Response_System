@@ -12,7 +12,7 @@ public class DataCenterAgent extends Agent {
 
     @Override
     protected void setup() {
-        System.out.println(getLocalName() + " launched.");
+        // System.out.println(getLocalName() + " launched.");
 
         // Register this agent with the DF
         DFAgentDescription dfd = new DFAgentDescription();

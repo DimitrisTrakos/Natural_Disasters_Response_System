@@ -18,6 +18,7 @@ public class FirefighterAgent extends Agent {
     private int x, y;
     private List<int[]> fireList = new ArrayList<>();
     private List<int[]> pathToFire = new ArrayList<>();
+    private boolean pauseAfterFire = false;
 
     @Override
     protected void setup() {
@@ -53,10 +54,17 @@ public class FirefighterAgent extends Agent {
         map.getCell(x, y).hasAgent = true;
         map.getCell(x, y).agentType = "firefighter";
 
-        // Behavior to handle fire reports and move
+        // Behavior to handle fire reports and movement
         addBehaviour(new TickerBehaviour(this, 1000) {
             @Override
             protected void onTick() {
+                if (pauseAfterFire) {
+                    pauseAfterFire = false;
+                    System.out.println(getLocalName() + " is recovering after extinguishing fire...");
+                    map.printMap();
+                    return;
+                }
+
                 // Receive fire alerts
                 MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
                 ACLMessage msg = receive(mt);
@@ -94,8 +102,11 @@ public class FirefighterAgent extends Agent {
                     System.out.println(getLocalName() + " moved to (" + x + "," + y + ")");
 
                     if (current.isOnFire) {
-                        current.isOnFire = false;
+                        pauseAfterFire = true;
                         System.out.println(getLocalName() + " extinguished fire at (" + x + "," + y + ")");
+                        current.isOnFire = false;
+                        current.fireFighterExtinguishFire= true;
+
                     }
                 }
 
