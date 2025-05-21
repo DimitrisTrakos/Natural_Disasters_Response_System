@@ -79,23 +79,30 @@ public class DataCenterAgent extends Agent {
         int homeX = Integer.parseInt(homeCoords[0].trim());
         int homeY = Integer.parseInt(homeCoords[1].trim());
     
-        // Register home location
         if (homeLocations.stream().noneMatch(h -> h[0] == homeX && h[1] == homeY)) {
             homeLocations.add(new int[]{homeX, homeY});
         }
     
-        // Parse fire alerts
         for (int i = 1; i < lines.length; i++) {
             try {
                 String line = lines[i].replace("Fire at (", "").replace(")", "").trim();
-                String[] coordPart = line.split(" ")[0].split(","); // Get only the coordinates
+                String[] coordPart = line.split(" ")[0].split(",");
                 int x = Integer.parseInt(coordPart[0].trim());
                 int y = Integer.parseInt(coordPart[1].trim());
     
+                boolean droneReported = fireReports.stream()
+                    .anyMatch(f -> f.x == x && f.y == y && f.priority == 3);
+                
+                if (droneReported) {
+                    System.out.println("🔄 Upgrading priority for fire at (" + x + "," + y + 
+                                     ") from drone report to home priority");
+                    fireReports.removeIf(f -> f.x == x && f.y == y);
+                }
+    
                 boolean isHouseFire = line.toUpperCase().contains("INSIDE HOME");
                 int priority = isHouseFire ? 1 : 2;
-    
                 addFireWithPriority(x, y, priority);
+                
             } catch (Exception e) {
                 System.err.println("❌ Failed to parse line: " + lines[i]);
             }
@@ -107,7 +114,7 @@ public class DataCenterAgent extends Agent {
         fireReports.removeIf(f -> f.x == x && f.y == y);
         fireReports.add(new FireReport(x, y, priorityLevel));
         System.out.printf("🔥 %s fire added at (%d,%d)%n",
-            priorityLevel == 1 ? "HOUSE" : "NEAR-HOME", x, y);
+            priorityLevel == 1 ? "HOUSE" : (priorityLevel == 2 ? "NEAR-HOME" : "NO-NEAR-HOME") , x, y);
     }
 
     private void processFireReport(String content) {
@@ -119,12 +126,21 @@ public class DataCenterAgent extends Agent {
                     int x = Integer.parseInt(parts[0].trim());
                     int y = Integer.parseInt(parts[1].trim());
                     
-                    // Check if near any home
-                    boolean nearHome = homeLocations.stream()
-                        .anyMatch(h -> Math.abs(h[0]-x) <= 1 && Math.abs(h[1]-y) <= 1);
+                    // Check if this was already reported by a homeowner
+                    boolean homePriority = fireReports.stream()
+                        .anyMatch(f -> f.x == x && f.y == y && f.priority <= 2);
                     
-                    int priority = nearHome ? 2 : 3; // 2 = near home, 3 = regular
-                    addFireWithPriority(x, y, priority);
+                    // Only add as regular fire if not already reported by homeowner
+                    if (!homePriority) {
+                        boolean nearHome = homeLocations.stream()
+                            .anyMatch(h -> Math.abs(h[0]-x) <= 1 && Math.abs(h[1]-y) <= 1);
+                        
+                        int priority = nearHome ? 2 : 3;
+                        addFireWithPriority(x, y, priority);
+                    } else {
+                        System.out.println("🔍 Duplicate fire at (" + x + "," + y + 
+                                        ") already reported by homeowner");
+                    }
                 } catch (NumberFormatException e) {
                     System.err.println("Invalid fire report: " + line);
                 }
@@ -144,11 +160,10 @@ public class DataCenterAgent extends Agent {
 
     private void sendNextTarget() {
         if (fireReports.isEmpty() || firefighterX == -1) {
-            System.out.println("ℹ No active fires or firefighter position unknown");
+            System.out.println("ℹ No active fires");
             return;
         }
 
-        // Sort by priority then distance
         FireReport nextFire = fireReports.stream()
             .sorted(Comparator.comparingInt(FireReport::getPriority)
                 .thenComparing(f -> manhattanDistance(f.x, f.y, firefighterX, firefighterY)))
@@ -229,7 +244,7 @@ public class DataCenterAgent extends Agent {
 
     static class FireReport {
         int x, y;
-        int priority; // 1 = house, 2 = near home, 3 = regular
+        int priority; 
         
         FireReport(int x, int y, int priority) {
             this.x = x;

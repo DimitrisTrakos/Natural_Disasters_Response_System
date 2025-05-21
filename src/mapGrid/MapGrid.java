@@ -44,6 +44,7 @@ public class MapGrid {
         }
         return null;
     }
+  
     public void addHouse(int x, int y) {
         GridCell cell = getCell(x, y);
         if (cell != null) {

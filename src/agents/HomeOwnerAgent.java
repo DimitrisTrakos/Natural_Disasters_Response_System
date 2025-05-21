@@ -12,7 +12,7 @@ import mapGrid.GridCell;
 public class HomeOwnerAgent extends Agent {
 
     private MapGrid map;
-    private int homeX, homeY;  // Home coordinates
+    private int homeX, homeY;  
     private jade.core.AID dataCenterAID;
     private boolean fireReported = false;
 
@@ -20,7 +20,6 @@ public class HomeOwnerAgent extends Agent {
     protected void setup() {
         System.out.println("🏠 " + getLocalName() + " initialized");
 
-        // Get home position from arguments
         Object[] args = getArguments();
         if (args != null && args.length > 2 && args[0] instanceof MapGrid) {
             map = (MapGrid) args[0];
@@ -61,7 +60,6 @@ public class HomeOwnerAgent extends Agent {
     }
 
     private void checkForNearbyFires() {
-        // Check 3x3 area around home (including home itself)
         boolean fireDetected = false;
         StringBuilder dangerReport = new StringBuilder();
 
@@ -87,7 +85,7 @@ public class HomeOwnerAgent extends Agent {
             sendFireAlert(dangerReport.toString());
             fireReported = true;
         } else if (!fireDetected) {
-            fireReported = false;  // Reset if fire is gone
+            fireReported = false;  
         }
     }
 

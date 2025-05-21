@@ -53,10 +53,10 @@ public class DroneAgent extends Agent {
 
     private void initializePosition() {
         Object[] args = getArguments();
-        if (args != null && args.length > 0 && args[0] instanceof MapGrid) {
+        if (args != null && args.length > 2 && args[0] instanceof MapGrid) {
             this.map = (MapGrid) args[0];
-            this.x = 0;
-            this.y = 0;
+            this.x = (int) args[1]; 
+            this.y = (int) args[2];
             updateMapPosition();
             System.out.println("📍 " + getLocalName() + " initialized at position (" + x + "," + y + ")");
         } else {

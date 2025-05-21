@@ -23,15 +23,25 @@ public class Main {
         int numberOfHouses = 3;
         
         MapGrid map = new MapGrid(width, height);
+        int droneStartX = 0, droneStartY = 0;        
+        int firefighterStartX = 0, firefighterStartY = height - 1; 
 
         ForestUtils.generateForest(map, 100);
 
         ForestUtils.generateForestClusters(map, 4, 30, 3);
-        
         HouseUtils.generateHouses(map, numberOfHouses);
-        FireUtils.igniteRandomForestCell(map, new Random());
+List<int[]> houseLocations = map.getHouseLocations();
 
-        launchJadeAgents(map);
+        map.getCell(droneStartX, droneStartY).isForest = false;
+        map.getCell(droneStartX, droneStartY).isHouse = false;
+        map.getCell(firefighterStartX, firefighterStartY).isForest = false;
+        map.getCell(firefighterStartX, firefighterStartY).isHouse = false;
+        FireUtils.igniteRandomForestCell(map, new Random(),
+                droneStartX, droneStartY,
+                firefighterStartX, firefighterStartY,
+                houseLocations);
+
+        launchJadeAgents(map,droneStartX, droneStartY, firefighterStartX, firefighterStartY);
 
         
         map.printMap();
@@ -41,7 +51,7 @@ public class Main {
 
     }
 
-    private static void launchJadeAgents(MapGrid map) {
+    private static void launchJadeAgents(MapGrid map,int droneX, int droneY, int firefighterX, int firefighterY) {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
         p.setParameter(Profile.LOCAL_PORT, "2002");
@@ -50,8 +60,9 @@ public class Main {
 
         try {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
-            container.createNewAgent("Drone", "agents.DroneAgent", new Object[] { map }).start();
-            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[] { map }).start();
+            container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map, droneX, droneY}).start();
+            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map, firefighterX, firefighterY}).start();
+
             List<int[]> houseLocations = map.getHouseLocations();
             for (int i = 0; i < houseLocations.size(); i++) {
                 int[] coords = houseLocations.get(i);

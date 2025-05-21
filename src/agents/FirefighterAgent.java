@@ -18,9 +18,9 @@ import utils.AStarPathfinder;
 public class FirefighterAgent extends Agent {
 
     private MapGrid map;
-    private int x, y;  // Current position
-    private  int startX = 0;  // Starting X position (always 0)
-    private  int startY;      // Starting Y position (bottom of map)
+    private int x, y; 
+    private  int startX;  
+    private  int startY;     
     private Stack<int[]> pathToFire = new Stack<>();
     private boolean isExtinguishing = false;
     private boolean skipNextStep = false;
@@ -30,37 +30,35 @@ public class FirefighterAgent extends Agent {
     protected void setup() {
         System.out.println("🚒 Firefighter " + getLocalName() + " initializing...");
 
-        // Initialize starting position
         Object[] args = getArguments();
-        if (args != null && args.length > 0 && args[0] instanceof MapGrid) {
-            map = (MapGrid) args[0];
-            startY = map.getHeight() - 1;  
+        if (args != null && args.length > 2 && args[0] instanceof MapGrid) {
+            this.map = (MapGrid) args[0];
+            this.x = (int) args[1]; 
+            this.y = (int) args[2]; 
+            this.startX = x;         
+            this.startY = y;
+        
         } else {
             System.err.println("❌ Error: No map provided!");
             doDelete();
             return;
         }
 
-        // Set initial position
         x = startX;
         y = startY;
         updateMapPosition();
         System.out.println("📍 Starting at position (" + startX + "," + startY + ")");
 
-        // Register with DF
         registerWithDF();
 
-        // Main behavior
-        addBehaviour(new TickerBehaviour(this, 1000) {  // Check every second
+        addBehaviour(new TickerBehaviour(this, 1000) { 
             @Override
             protected void onTick() {
-                // Handle pause after extinguishing
                 if (skipNextStep) {
                     skipNextStep = false;
                     return;
                 }
 
-                // Process messages
                 ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
                 if (msg != null) {
                     if (msg.getContent().startsWith("TARGET:")) {
@@ -70,7 +68,6 @@ public class FirefighterAgent extends Agent {
                     }
                 }
 
-                // Movement logic
                 if (!pathToFire.isEmpty()) {
                     moveToNextPosition();
                 } else if (!returningHome) {
@@ -125,7 +122,6 @@ public class FirefighterAgent extends Agent {
         }
         
         pathToFire.clear();
-        // Reverse to use as stack
         for (int i = path.size()-1; i >= 0; i--) {
             pathToFire.push(path.get(i));
         }
@@ -135,17 +131,14 @@ public class FirefighterAgent extends Agent {
     private void moveToNextPosition() {
         int[] next = pathToFire.pop();
         
-        // Clear current position
         map.getCell(x, y).hasAgent = false;
         map.getCell(x, y).agentType = "";
         
-        // Update position
         x = next[0];
         y = next[1];
         updateMapPosition();
         System.out.println("➡ Moved to (" + x + "," + y + ")");
 
-        // Handle arrival
         if (pathToFire.isEmpty()) {
             if (returningHome) {
                 System.out.println("✅ Reached starting position");
@@ -168,7 +161,7 @@ public class FirefighterAgent extends Agent {
 
     private void extinguishFire() {
         isExtinguishing = true;
-        skipNextStep = true;  // Pause after extinguishing
+        skipNextStep = true;  
         
         GridCell cell = map.getCell(x, y);
         cell.isOnFire = false;
