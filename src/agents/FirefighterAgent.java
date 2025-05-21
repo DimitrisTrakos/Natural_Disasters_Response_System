@@ -18,15 +18,69 @@ import utils.AStarPathfinder;
 public class FirefighterAgent extends Agent {
 
     private MapGrid map;
-    private int x, y;
+    private int x, y;  // Current position
+    private  int startX = 0;  // Starting X position (always 0)
+    private  int startY;      // Starting Y position (bottom of map)
     private Stack<int[]> pathToFire = new Stack<>();
     private boolean isExtinguishing = false;
-    private boolean skipNextStep = false;  
+    private boolean skipNextStep = false;
+    private boolean returningHome = false;
+
     @Override
     protected void setup() {
-        System.out.println("🚒 " + getLocalName() + " launched.");
+        System.out.println("🚒 Firefighter " + getLocalName() + " initializing...");
 
-        // DF Registration
+        // Initialize starting position
+        Object[] args = getArguments();
+        if (args != null && args.length > 0 && args[0] instanceof MapGrid) {
+            map = (MapGrid) args[0];
+            startY = map.getHeight() - 1;  
+        } else {
+            System.err.println("❌ Error: No map provided!");
+            doDelete();
+            return;
+        }
+
+        // Set initial position
+        x = startX;
+        y = startY;
+        updateMapPosition();
+        System.out.println("📍 Starting at position (" + startX + "," + startY + ")");
+
+        // Register with DF
+        registerWithDF();
+
+        // Main behavior
+        addBehaviour(new TickerBehaviour(this, 1000) {  // Check every second
+            @Override
+            protected void onTick() {
+                // Handle pause after extinguishing
+                if (skipNextStep) {
+                    skipNextStep = false;
+                    return;
+                }
+
+                // Process messages
+                ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                if (msg != null) {
+                    if (msg.getContent().startsWith("TARGET:")) {
+                        handleTargetMessage(msg.getContent());
+                    } else if (msg.getContent().equals("RETURN_HOME")) {
+                        returnToStartPosition();
+                    }
+                }
+
+                // Movement logic
+                if (!pathToFire.isEmpty()) {
+                    moveToNextPosition();
+                } else if (!returningHome) {
+                    sendPositionUpdate();
+                }
+            }
+        });
+    }
+
+    private void registerWithDF() {
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
         ServiceDescription sd = new ServiceDescription();
@@ -36,116 +90,98 @@ public class FirefighterAgent extends Agent {
 
         try {
             DFService.register(this, dfd);
-            System.out.println("📝 " + getLocalName() + " registered with DF");
         } catch (FIPAException e) {
             e.printStackTrace();
         }
+    }
 
-        Object[] args = getArguments();
-        if (args != null && args.length > 0 && args[0] instanceof MapGrid) {
-            map = (MapGrid) args[0];
-        } else {
-            System.err.println("❌ " + getLocalName() + ": No map provided - terminating");
-            doDelete();
+    private void handleTargetMessage(String content) {
+        String[] coords = content.replace("TARGET:", "").split(",");
+        int targetX = Integer.parseInt(coords[0]);
+        int targetY = Integer.parseInt(coords[1]);
+        
+        System.out.println("\n🎯 New target received: (" + targetX + "," + targetY + ")");
+        calculatePathTo(targetX, targetY);
+        returningHome = false;
+    }
+
+    private void returnToStartPosition() {
+        if (x == startX && y == startY) {
+            System.out.println("ℹ Already at starting position");
             return;
         }
-
-        x = 0;
-        y = map.getHeight() - 1;
-        updateMapPosition();
-        System.out.println("📍 Initial position: (" + x + "," + y + ")");
-
-        addBehaviour(new TickerBehaviour(this, 1000) {
-            @Override
-            protected void onTick() {
-                if (skipNextStep) {
-                    System.out.println("⏸️ Recovering after extinguishing fire...");
-                    skipNextStep = false;
-                    return;
-                }
-
-                if (isExtinguishing) {
-                    isExtinguishing = false;
-                    skipNextStep = true;  
-                    return;
-                }
-
-                ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-                if (msg != null && msg.getContent().startsWith("TARGET:")) {
-                    handleNewTarget(msg.getContent());
-                }
-
-                if (!pathToFire.isEmpty()) {
-                    moveAlongPath();
-                } else {
-                    sendPositionUpdate();
-                }
-            }
-        });
+        
+        System.out.println("\n🏠 ORDERED TO RETURN HOME");
+        returningHome = true;
+        calculatePathTo(startX, startY);
     }
 
-    private void updateMapPosition() {
-        GridCell cell = map.getCell(x, y);
-        cell.hasAgent = true;
-        cell.agentType = "firefighter";
-    }
-
-    private void handleNewTarget(String targetMsg) {
-        String[] parts = targetMsg.replace("TARGET:", "").split(",");
-        int targetX = Integer.parseInt(parts[0]);
-        int targetY = Integer.parseInt(parts[1]);
-        
-        System.out.printf("\n🎯 NEW TARGET: (%d,%d) | Current: (%d,%d)%n", 
-            targetX, targetY, x, y);
-        
+    private void calculatePathTo(int targetX, int targetY) {
         List<int[]> path = AStarPathfinder.findPath(map, x, y, targetX, targetY);
-        if (!path.isEmpty()) {
-            pathToFire.clear();
-            for (int i = path.size()-1; i >= 0; i--) {
-                pathToFire.push(path.get(i));
-            }
-            System.out.printf("🛣️  Path calculated (%d steps): %s%n", 
-                path.size(), formatPath(path));
-        } else {
-            System.err.println("⚠ ERROR: No valid path to target!");
+        
+        if (path.isEmpty()) {
+            System.err.println("⚠ No valid path to (" + targetX + "," + targetY + ")");
+            return;
         }
+        
+        pathToFire.clear();
+        // Reverse to use as stack
+        for (int i = path.size()-1; i >= 0; i--) {
+            pathToFire.push(path.get(i));
+        }
+        System.out.println("🛣️ Path calculated (" + path.size() + " steps)");
     }
 
-    private String formatPath(List<int[]> path) {
-        StringBuilder sb = new StringBuilder();
-        for (int[] coord : path) {
-            sb.append("(").append(coord[0]).append(",").append(coord[1]).append(") ");
-        }
-        return sb.toString().trim();
-    }
-
-    private void moveAlongPath() {
+    private void moveToNextPosition() {
+        int[] next = pathToFire.pop();
+        
+        // Clear current position
         map.getCell(x, y).hasAgent = false;
         map.getCell(x, y).agentType = "";
-
-        int[] next = pathToFire.pop();
-        System.out.printf("\n🚒 MOVING: (%d,%d) → (%d,%d)%n", 
-            x, y, next[0], next[1]);
+        
+        // Update position
         x = next[0];
         y = next[1];
         updateMapPosition();
+        System.out.println("➡ Moved to (" + x + "," + y + ")");
 
-        GridCell current = map.getCell(x, y);
-        if (current.isOnFire) {
+        // Handle arrival
+        if (pathToFire.isEmpty()) {
+            if (returningHome) {
+                System.out.println("✅ Reached starting position");
+                returningHome = false;
+            } else {
+                handleArrivalAtTarget();
+            }
+        }
+    }
+
+    private void handleArrivalAtTarget() {
+        GridCell cell = map.getCell(x, y);
+        if (cell.isOnFire) {
             extinguishFire();
-        } else if (pathToFire.isEmpty()) {
-            System.out.println("✅ Reached target position");
+        } else {
+            System.out.println("ℹ Reached target position (no fire found)");
             sendExtinguishedUpdate(x, y);
         }
     }
 
     private void extinguishFire() {
         isExtinguishing = true;
+        skipNextStep = true;  // Pause after extinguishing
+        
         GridCell cell = map.getCell(x, y);
         cell.isOnFire = false;
         cell.fireFighterExtinguishFire = true;
-        System.out.printf("\n🧯 EXTINGUISHED FIRE at (%d,%d)%n", x, y);
+        
+        System.out.println("🧯 Fire extinguished at (" + x + "," + y + ")");
         sendExtinguishedUpdate(x, y);
+    }
+
+    private void updateMapPosition() {
+        GridCell cell = map.getCell(x, y);
+        cell.hasAgent = true;
+        cell.agentType = "firefighter";
     }
 
     private void sendPositionUpdate() {
@@ -190,7 +226,7 @@ public class FirefighterAgent extends Agent {
     protected void takeDown() {
         try {
             DFService.deregister(this);
-            System.out.println("🛑 " + getLocalName() + " shutting down");
+            System.out.println("🛑 Firefighter " + getLocalName() + " shutting down");
         } catch (FIPAException e) {
             e.printStackTrace();
         }

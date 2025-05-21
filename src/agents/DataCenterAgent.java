@@ -115,6 +115,7 @@ public class DataCenterAgent extends Agent {
 
         fireReports.removeIf(f -> f.x == x && f.y == y);
         System.out.println("Removed extinguished fire at: (" + x + "," + y + ")");
+        checkForReturnCommand();
     }
 
     private void sendNextTarget() {
@@ -158,6 +159,32 @@ public class DataCenterAgent extends Agent {
 
     private int manhattanDistance(int x1, int y1, int x2, int y2) {
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+    }
+
+    private void checkForReturnCommand() {
+        if (fireReports.isEmpty()) {
+            System.out.println("📭 No more fires - telling firefighter to return home");
+            
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.setContent("RETURN_HOME");
+            
+            try {
+                DFAgentDescription template = new DFAgentDescription();
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("firefighter");
+                template.addServices(sd);
+                
+                DFAgentDescription[] result = DFService.search(this, template);
+                for (DFAgentDescription desc : result) {
+                    msg.addReceiver(desc.getName());
+                }
+                send(msg);
+                System.out.println("📤 Sent return command to firefighter");
+                
+            } catch (FIPAException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

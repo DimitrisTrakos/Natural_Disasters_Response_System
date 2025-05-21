@@ -28,9 +28,9 @@ public class Main {
         launchJadeAgents(map);
 
         
-            map.printMap();
-            map.spreadFire();
-            System.out.println();
+        map.printMap();
+        map.spreadFire();
+        System.out.println();
         
 
     }

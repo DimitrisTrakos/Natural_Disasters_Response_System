@@ -26,7 +26,6 @@ public class MapGrid {
             }
         }
 
-        // Randomly place houses
         for (int i = 0; i < houseCount; i++) {
             int x, y;
             do {
