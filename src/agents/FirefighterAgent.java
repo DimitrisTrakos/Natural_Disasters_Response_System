@@ -129,7 +129,7 @@ public class FirefighterAgent extends Agent {
         for (int i = path.size()-1; i >= 0; i--) {
             pathToFire.push(path.get(i));
         }
-        System.out.println("🛣️ Path calculated (" + path.size() + " steps)");
+        System.out.println("🛣️  Path calculated (" + path.size() + " steps)");
     }
 
     private void moveToNextPosition() {

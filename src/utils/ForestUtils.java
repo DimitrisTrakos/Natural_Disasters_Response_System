@@ -14,7 +14,7 @@ public class ForestUtils {
             int y = rand.nextInt(height);
             GridCell cell = map.getCell(x, y);
 
-            if (cell != null && !cell.isForest) {
+            if (cell != null && !cell.isForest && !cell.isHouse) {
                 cell.isForest = true;
             }
         }

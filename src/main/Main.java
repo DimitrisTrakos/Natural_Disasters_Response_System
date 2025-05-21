@@ -1,5 +1,8 @@
 package main;
 
+import java.util.List;
+import java.util.Random;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -9,21 +12,24 @@ import jade.wrapper.StaleProxyException;
 import mapGrid.MapGrid;
 import utils.ForestUtils;
 import utils.FireUtils;
+import utils.HouseUtils;
 import jade.wrapper.ContainerController;
 
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 5;
-        int height = 5;
-
+        int width = 10;
+        int height = 10;
+        int numberOfHouses = 3;
+        
         MapGrid map = new MapGrid(width, height);
 
         ForestUtils.generateForest(map, 100);
 
         ForestUtils.generateForestClusters(map, 4, 30, 3);
-
-        FireUtils.igniteRandomForestCell(map, new java.util.Random());
+        
+        HouseUtils.generateHouses(map, numberOfHouses);
+        FireUtils.igniteRandomForestCell(map, new Random());
 
         launchJadeAgents(map);
 
@@ -46,6 +52,14 @@ public class Main {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
             container.createNewAgent("Drone", "agents.DroneAgent", new Object[] { map }).start();
             container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[] { map }).start();
+            List<int[]> houseLocations = map.getHouseLocations();
+            for (int i = 0; i < houseLocations.size(); i++) {
+                int[] coords = houseLocations.get(i);
+                String agentName = "Homeowner" + (i + 1);
+                Object[] args = new Object[]{map, coords[0], coords[1]};
+                container.createNewAgent(agentName, "agents.HomeOwnerAgent", args).start();
+                System.out.println("👤 Created " + agentName + " for house at (" + coords[0] + "," + coords[1] + ")");
+            }
 
         } catch (StaleProxyException e) {
             e.printStackTrace();

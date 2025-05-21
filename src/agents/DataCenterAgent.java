@@ -8,32 +8,21 @@ import jade.domain.FIPAAgentManagement.*;
 import jade.core.behaviours.CyclicBehaviour;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataCenterAgent extends Agent {
 
     private List<FireReport> fireReports = new ArrayList<>();
+    private List<int[]> homeLocations = new ArrayList<>();
     private int firefighterX = -1;
     private int firefighterY = -1;
 
     @Override
     protected void setup() {
-        System.out.println(getLocalName() + " launched.");
+        System.out.println("🖥️ " + getLocalName() + " initialized");
 
-        DFAgentDescription dfd = new DFAgentDescription();
-        dfd.setName(getAID());
-
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("data-center");
-        sd.setName("Fire-Data-Service");
-        dfd.addServices(sd);
-
-        try {
-            DFService.register(this, dfd);
-            System.out.println(getLocalName() + " registered with DF.");
-        } catch (FIPAException e) {
-            System.err.println(getLocalName() + " failed to register with DF.");
-            e.printStackTrace();
-        }
+        // Register with DF
+        registerWithDF();
 
         addBehaviour(new CyclicBehaviour() {
             @Override
@@ -41,17 +30,20 @@ public class DataCenterAgent extends Agent {
                 ACLMessage msg = receive();
                 if (msg != null) {
                     String content = msg.getContent();
-                    System.out.println(getLocalName() + " received: " + content);
-
+                    
                     if (content.startsWith("POSITION:")) {
                         updateFirefighterPosition(content);
-                        sendNextTarget();
-                    } else if (content.startsWith("EXTINGUISHED:")) {
+                    } 
+                    else if (content.startsWith("EXTINGUISHED:")) {
                         removeExtinguishedFire(content);
-                    } else {
-                        processFireReport(content);
-                        sendNextTarget();
                     }
+                    else if (content.startsWith("HOME_DANGER:")) {
+                        processHomeDanger(content);
+                    }
+                    else {
+                        processFireReport(content);
+                    }
+                    sendNextTarget();
                 } else {
                     block();
                 }
@@ -59,108 +51,147 @@ public class DataCenterAgent extends Agent {
         });
     }
 
+    private void registerWithDF() {
+        DFAgentDescription dfd = new DFAgentDescription();
+        dfd.setName(getAID());
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("data-center");
+        sd.setName("Fire-Control");
+        dfd.addServices(sd);
+
+        try {
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void updateFirefighterPosition(String content) {
-        String[] parts = content.replace("POSITION:", "").trim().split(",");
+        String[] parts = content.replace("POSITION:", "").split(",");
         firefighterX = Integer.parseInt(parts[0]);
         firefighterY = Integer.parseInt(parts[1]);
-        System.out.println("Updated firefighter position: (" + firefighterX + "," + firefighterY + ")");
+        System.out.println("📍 Firefighter position updated to (" + firefighterX + "," + firefighterY + ")");
+    }
+
+    private void processHomeDanger(String content) {
+        String[] lines = content.replace("HOME_DANGER:", "").split("\n");
+        String[] homeCoords = lines[0].split(",");
+        int homeX = Integer.parseInt(homeCoords[0].trim());
+        int homeY = Integer.parseInt(homeCoords[1].trim());
+    
+        // Register home location
+        if (homeLocations.stream().noneMatch(h -> h[0] == homeX && h[1] == homeY)) {
+            homeLocations.add(new int[]{homeX, homeY});
+        }
+    
+        // Parse fire alerts
+        for (int i = 1; i < lines.length; i++) {
+            try {
+                String line = lines[i].replace("Fire at (", "").replace(")", "").trim();
+                String[] coordPart = line.split(" ")[0].split(","); // Get only the coordinates
+                int x = Integer.parseInt(coordPart[0].trim());
+                int y = Integer.parseInt(coordPart[1].trim());
+    
+                boolean isHouseFire = line.toUpperCase().contains("INSIDE HOME");
+                int priority = isHouseFire ? 1 : 2;
+    
+                addFireWithPriority(x, y, priority);
+            } catch (Exception e) {
+                System.err.println("❌ Failed to parse line: " + lines[i]);
+            }
+        }
+    }
+
+    private void addFireWithPriority(int x, int y, int priorityLevel) {
+        // 1 = House fire, 2 = Near home, 3 = Regular
+        fireReports.removeIf(f -> f.x == x && f.y == y);
+        fireReports.add(new FireReport(x, y, priorityLevel));
+        System.out.printf("🔥 %s fire added at (%d,%d)%n",
+            priorityLevel == 1 ? "HOUSE" : "NEAR-HOME", x, y);
     }
 
     private void processFireReport(String content) {
-        System.out.println("\n📊 DATACENTER: Processing fire report...");
         String[] lines = content.split("\n");
-        int newFiresAdded = 0;
-        int duplicateFires = 0;
-    
         for (String line : lines) {
             String[] parts = line.split(",");
-            if (parts.length == 3) {
+            if (parts.length >= 3) {
                 try {
                     int x = Integer.parseInt(parts[0].trim());
                     int y = Integer.parseInt(parts[1].trim());
-                    boolean isHouse = Boolean.parseBoolean(parts[2].trim());
-    
-                    boolean fireExists = fireReports.stream()
-                        .anyMatch(f -> f.x == x && f.y == y);
-    
-                    if (!fireExists) {
-                        fireReports.add(new FireReport(x, y, isHouse));
-                        newFiresAdded++;
-                        System.out.printf("➕ NEW FIRE: (%d,%d) | Type: %s%n",
-                            x, y, isHouse ? "House Fire 🏠🔥" : "Regular Fire 🔥");
-                    } else {
-                        duplicateFires++;
-                        System.out.printf("♻ DUPLICATE: Fire at (%d,%d) already registered%n", x, y);
-                    }
+                    
+                    // Check if near any home
+                    boolean nearHome = homeLocations.stream()
+                        .anyMatch(h -> Math.abs(h[0]-x) <= 1 && Math.abs(h[1]-y) <= 1);
+                    
+                    int priority = nearHome ? 2 : 3; // 2 = near home, 3 = regular
+                    addFireWithPriority(x, y, priority);
                 } catch (NumberFormatException e) {
-                    System.err.println("⚠ Invalid fire report format: " + line);
+                    System.err.println("Invalid fire report: " + line);
                 }
-            } else {
-                System.err.println("⚠ Malformed fire report: " + line);
             }
-        }
-    
-        System.out.printf("📝 Report Summary: %d new fires | %d duplicates ignored%n", 
-            newFiresAdded, duplicateFires);
-    
-        if (newFiresAdded > 0) {
-            sendNextTarget();
         }
     }
 
     private void removeExtinguishedFire(String content) {
-        String[] parts = content.replace("EXTINGUISHED:", "").trim().split(",");
+        String[] parts = content.replace("EXTINGUISHED:", "").split(",");
         int x = Integer.parseInt(parts[0].trim());
         int y = Integer.parseInt(parts[1].trim());
-
+        
         fireReports.removeIf(f -> f.x == x && f.y == y);
-        System.out.println("Removed extinguished fire at: (" + x + "," + y + ")");
+        System.out.println("➖ Fire removed at (" + x + "," + y + ")");
         checkForReturnCommand();
     }
 
     private void sendNextTarget() {
-        if (fireReports.isEmpty()) {
-            System.out.println("📊 No active fires in database");
+        if (fireReports.isEmpty() || firefighterX == -1) {
+            System.out.println("ℹ No active fires or firefighter position unknown");
             return;
         }
-    
+
+        // Sort by priority then distance
         FireReport nextFire = fireReports.stream()
-            .min(Comparator.comparing((FireReport f) -> !f.isHouse)
+            .sorted(Comparator.comparingInt(FireReport::getPriority)
                 .thenComparing(f -> manhattanDistance(f.x, f.y, firefighterX, firefighterY)))
+            .findFirst()
             .orElse(null);
-    
+
         if (nextFire != null) {
-            System.out.printf("\n🎯 SELECTED TARGET: (%d,%d) | Priority: %s | Distance: %d%n",
-                nextFire.x, nextFire.y,
-                nextFire.isHouse ? "HIGH (House Fire)" : "Normal",
-                manhattanDistance(nextFire.x, nextFire.y, firefighterX, firefighterY));
-    
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.setContent("TARGET:" + nextFire.x + "," + nextFire.y);
+            String priorityType = switch(nextFire.priority) {
+                case 1 -> "HOUSE FIRE (HIGHEST PRIORITY)";
+                case 2 -> "Fire near home (MEDIUM PRIORITY)";
+                default -> "Regular fire (LOW PRIORITY)";
+            };
             
-            try {
-                // Create the template directly here instead of calling a separate method
-                DFAgentDescription template = new DFAgentDescription();
-                ServiceDescription sd = new ServiceDescription();
-                sd.setType("firefighter");
-                template.addServices(sd);
-                
-                DFAgentDescription[] result = DFService.search(this, template);
-                for (DFAgentDescription desc : result) {
-                    msg.addReceiver(desc.getName());
-                }
-                send(msg);
-                System.out.println("📤 Sent target to firefighter");
-            } catch (FIPAException e) {
-                e.printStackTrace();
+            System.out.printf("\n🎯 Selected target: (%d,%d) | %s | Distance: %d%n",
+                nextFire.x, nextFire.y, priorityType, 
+                manhattanDistance(nextFire.x, nextFire.y, firefighterX, firefighterY));
+
+            sendTargetToFirefighter(nextFire.x, nextFire.y);
+        }
+    }
+
+    private void sendTargetToFirefighter(int targetX, int targetY) {
+        try {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.setContent("TARGET:" + targetX + "," + targetY);
+            
+            DFAgentDescription template = new DFAgentDescription();
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("firefighter");
+            template.addServices(sd);
+
+            for (DFAgentDescription desc : DFService.search(this, template)) {
+                msg.addReceiver(desc.getName());
             }
+            send(msg);
+        } catch (FIPAException e) {
+            e.printStackTrace();
         }
     }
 
     private int manhattanDistance(int x1, int y1, int x2, int y2) {
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
-
     private void checkForReturnCommand() {
         if (fireReports.isEmpty()) {
             System.out.println("📭 No more fires - telling firefighter to return home");
@@ -186,12 +217,11 @@ public class DataCenterAgent extends Agent {
             }
         }
     }
-
     @Override
     protected void takeDown() {
         try {
             DFService.deregister(this);
-            System.out.println(getLocalName() + " deregistered from DF.");
+            System.out.println("🖥️  " + getLocalName() + " shutting down");
         } catch (FIPAException e) {
             e.printStackTrace();
         }
@@ -199,13 +229,16 @@ public class DataCenterAgent extends Agent {
 
     static class FireReport {
         int x, y;
-        boolean isHouse;
-        long timestamp = System.currentTimeMillis();
-
-        FireReport(int x, int y, boolean isHouse) {
+        int priority; // 1 = house, 2 = near home, 3 = regular
+        
+        FireReport(int x, int y, int priority) {
             this.x = x;
             this.y = y;
-            this.isHouse = isHouse;
+            this.priority = priority;
+        }
+        
+        int getPriority() {
+            return priority;
         }
     }
 }

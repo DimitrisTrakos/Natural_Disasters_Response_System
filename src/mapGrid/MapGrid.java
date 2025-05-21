@@ -1,5 +1,7 @@
 package mapGrid;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MapGrid {
@@ -7,6 +9,7 @@ public class MapGrid {
     private final int height;
     private final GridCell[][] grid;
     private final Random random = new Random();
+    private List<int[]> houseLocations = new ArrayList<>();
 
     public MapGrid(int width, int height) {
         this.width = width;
@@ -17,8 +20,6 @@ public class MapGrid {
 
     private void initializeGrid() {
 
-        int totalCells = width * height;
-        int houseCount = (int) (totalCells * 0.05); // 5% of the map
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -26,15 +27,7 @@ public class MapGrid {
             }
         }
 
-        for (int i = 0; i < houseCount; i++) {
-            int x, y;
-            do {
-                x = random.nextInt(width);
-                y = random.nextInt(height);
-            } while (grid[y][x].isHouse); // Ensure unique positions
-            grid[y][x].isHouse = true;
-            grid[y][x].isForest = false; // Optional: override forest if needed
-        }
+        
     }
 
     public int getWidth() {
@@ -51,7 +44,16 @@ public class MapGrid {
         }
         return null;
     }
-
+    public void addHouse(int x, int y) {
+        GridCell cell = getCell(x, y);
+        if (cell != null) {
+            cell.isHouse = true;
+            houseLocations.add(new int[]{x, y});
+        }
+    }
+    public List<int[]> getHouseLocations() {
+        return new ArrayList<>(houseLocations);
+    }
     public void spreadFire() {
         boolean[][] newFires = new boolean[height][width];
 
