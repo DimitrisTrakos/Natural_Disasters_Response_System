@@ -43,10 +43,10 @@ public class FireUtils {
         double probability = rand.nextDouble();
         int[] fireLocation = null;
 
-        if (probability < 0.6 && !houseCells.isEmpty()) {
+        if (probability < 0.5 && !houseCells.isEmpty()) {
             fireLocation = houseCells.get(rand.nextInt(houseCells.size()));
         } 
-        else if (probability < 0.9 && !nearHouseCells.isEmpty()) {
+        else if (probability < 0.7 && !nearHouseCells.isEmpty()) {
             fireLocation = nearHouseCells.get(rand.nextInt(nearHouseCells.size()));
         }
         else if (!regularForestCells.isEmpty()) {

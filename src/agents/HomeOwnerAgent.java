@@ -99,7 +99,7 @@ public class HomeOwnerAgent extends Agent {
             msg.addReceiver(dataCenterAID);
             msg.setContent("HOME_DANGER:" + homeX + "," + homeY + "\n" + dangerInfo);
             send(msg);
-            System.out.println("🚨 Sent fire alert to DataCenter:\n" + dangerInfo);
+            System.out.println("👤 Sent fire alert to DataCenter:\n" + dangerInfo);
         }
     }
 

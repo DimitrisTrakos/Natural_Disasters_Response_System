@@ -47,7 +47,7 @@ public class FirefighterAgent extends Agent {
         x = startX;
         y = startY;
         updateMapPosition();
-        System.out.println("📍 Starting at position (" + startX + "," + startY + ")");
+        System.out.println("🚒 Starting at position (" + startX + "," + startY + ")");
 
         registerWithDF();
 
@@ -97,18 +97,18 @@ public class FirefighterAgent extends Agent {
         int targetX = Integer.parseInt(coords[0]);
         int targetY = Integer.parseInt(coords[1]);
         
-        System.out.println("\n🎯 New target received: (" + targetX + "," + targetY + ")");
+        System.out.println("\n🚒 New target received: (" + targetX + "," + targetY + ")");
         calculatePathTo(targetX, targetY);
         returningHome = false;
     }
 
     private void returnToStartPosition() {
         if (x == startX && y == startY) {
-            System.out.println("ℹ Already at starting position");
+            System.out.println("🚒 Already at starting position");
             return;
         }
         
-        System.out.println("\n🏠 ORDERED TO RETURN HOME");
+        System.out.println("\n🚒 ORDERED TO RETURN HOME");
         returningHome = true;
         calculatePathTo(startX, startY);
     }
@@ -125,7 +125,7 @@ public class FirefighterAgent extends Agent {
         for (int i = path.size()-1; i >= 0; i--) {
             pathToFire.push(path.get(i));
         }
-        System.out.println("🛣️  Path calculated (" + path.size() + " steps)");
+        System.out.println("🚒 Path calculated (" + path.size() + " steps)");
     }
 
     private void moveToNextPosition() {
@@ -137,11 +137,11 @@ public class FirefighterAgent extends Agent {
         x = next[0];
         y = next[1];
         updateMapPosition();
-        System.out.println("➡ Moved to (" + x + "," + y + ")");
+        System.out.println("🚒 Moved to (" + x + "," + y + ")");
 
         if (pathToFire.isEmpty()) {
             if (returningHome) {
-                System.out.println("✅ Reached starting position");
+                System.out.println("🚒 Reached starting position");
                 returningHome = false;
             } else {
                 handleArrivalAtTarget();
@@ -167,7 +167,7 @@ public class FirefighterAgent extends Agent {
         cell.isOnFire = false;
         cell.fireFighterExtinguishFire = true;
         
-        System.out.println("🧯 Fire extinguished at (" + x + "," + y + ")");
+        System.out.println("🚒 Fire extinguished at (" + x + "," + y + ")");
         sendExtinguishedUpdate(x, y);
     }
 

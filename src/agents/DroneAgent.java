@@ -58,7 +58,7 @@ public class DroneAgent extends Agent {
             this.x = (int) args[1]; 
             this.y = (int) args[2];
             updateMapPosition();
-            System.out.println("📍 " + getLocalName() + " initialized at position (" + x + "," + y + ")");
+            System.out.println("🚁 " + getLocalName() + " initialized at position (" + x + "," + y + ")");
         } else {
             System.out.println("❌ " + getLocalName() + ": No valid map received - terminating");
             doDelete();
@@ -105,11 +105,11 @@ public class DroneAgent extends Agent {
                                           .append("\n");
                                 reportedFires.add(fireKey);
                                 newFiresDetected++;
-                                System.out.println("🔥 NEW FIRE at (" + scanX + "," + scanY + 
+                                System.out.println("🚁 NEW FIRE at (" + scanX + "," + scanY + 
                                                  ") - " + (cell.isHouse ? "House Fire!" : "Regular Fire"));
                             } else {
                                 duplicateFires++;
-                                System.out.println("🔍 Already reported fire at (" + scanX + "," + scanY + ")");
+                                System.out.println("🚁 Already reported fire at (" + scanX + "," + scanY + ")");
                             }
                         }
                     }
@@ -118,12 +118,12 @@ public class DroneAgent extends Agent {
 
             if (newFiresDetected > 0) {
                 sendFireReport(fireReport.toString(), newFiresDetected);
-                System.out.println("📊 Fire Report: " + newFiresDetected + " new | " + 
+                System.out.println("🚁 Fire Report: " + newFiresDetected + " new | " + 
                                  duplicateFires + " duplicates");
             } else if (duplicateFires > 0) {
-                System.out.println("🔍 Scan complete - " + duplicateFires + " known fires in vicinity");
+                System.out.println("🚁 Scan complete - " + duplicateFires + " known fires in vicinity");
             } else {
-                System.out.println("🔍 Scan complete - No fires detected");
+                System.out.println("🚁 Scan complete - No fires detected");
             }
         }
 
@@ -137,7 +137,7 @@ public class DroneAgent extends Agent {
                 msg.addReceiver(dataCenterAID);
                 msg.setContent(report);
                 send(msg);
-                System.out.println("📨 Sent report with " + fireCount + " fires to DataCenter");
+                System.out.println("🚁 Sent report with " + fireCount + " fires to DataCenter");
             } else {
                 System.out.println("⚠ Couldn't send fire report - DataCenter unavailable");
             }
@@ -153,7 +153,7 @@ public class DroneAgent extends Agent {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
                 if (result.length > 0) {
                     dataCenterAID = result[0].getName();
-                    System.out.println("📡 Connected to DataCenter: " + dataCenterAID.getLocalName());
+                    System.out.println("🚁 Connected to DataCenter: " + dataCenterAID.getLocalName());
                 }
             } catch (FIPAException e) {
                 System.err.println("❌ Error searching for DataCenter");

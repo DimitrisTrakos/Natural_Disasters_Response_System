@@ -72,7 +72,7 @@ public class MapGrid {
                         GridCell neighbor = getCell(nx, ny);
 
                         if (neighbor != null && neighbor.isForest && !neighbor.isOnFire) {
-                            if (random.nextDouble() < 0.2) {
+                            if (random.nextDouble() > 0.2) {
                                 newFires[ny][nx] = true;
                             }
                         }

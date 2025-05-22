@@ -18,9 +18,9 @@ import jade.wrapper.ContainerController;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 10;
-        int height = 10;
-        int numberOfHouses = 3;
+        int width = 12;
+        int height = 12;
+        int numberOfHouses = 5;
         
         MapGrid map = new MapGrid(width, height);
         int droneStartX = 0, droneStartY = 0;        
@@ -30,7 +30,7 @@ public class Main {
 
         ForestUtils.generateForestClusters(map, 4, 30, 3);
         HouseUtils.generateHouses(map, numberOfHouses);
-List<int[]> houseLocations = map.getHouseLocations();
+        List<int[]> houseLocations = map.getHouseLocations();
 
         map.getCell(droneStartX, droneStartY).isForest = false;
         map.getCell(droneStartX, droneStartY).isHouse = false;
@@ -41,12 +41,13 @@ List<int[]> houseLocations = map.getHouseLocations();
                 firefighterStartX, firefighterStartY,
                 houseLocations);
 
-        launchJadeAgents(map,droneStartX, droneStartY, firefighterStartX, firefighterStartY);
 
         
         map.printMap();
         map.spreadFire();
         System.out.println();
+        launchJadeAgents(map,droneStartX, droneStartY, firefighterStartX, firefighterStartY);
+
         
 
     }

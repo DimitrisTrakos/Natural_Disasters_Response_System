@@ -70,7 +70,7 @@ public class DataCenterAgent extends Agent {
         String[] parts = content.replace("POSITION:", "").split(",");
         firefighterX = Integer.parseInt(parts[0]);
         firefighterY = Integer.parseInt(parts[1]);
-        System.out.println("📍 Firefighter position updated to (" + firefighterX + "," + firefighterY + ")");
+        System.out.println("🖥️  Firefighter position updated to (" + firefighterX + "," + firefighterY + ")");
     }
 
     private void processHomeDanger(String content) {
@@ -94,7 +94,7 @@ public class DataCenterAgent extends Agent {
                     .anyMatch(f -> f.x == x && f.y == y && f.priority == 3);
                 
                 if (droneReported) {
-                    System.out.println("🔄 Upgrading priority for fire at (" + x + "," + y + 
+                    System.out.println("🖥️  Upgrading priority for fire at (" + x + "," + y + 
                                      ") from drone report to home priority");
                     fireReports.removeIf(f -> f.x == x && f.y == y);
                 }
@@ -113,7 +113,7 @@ public class DataCenterAgent extends Agent {
         // 1 = House fire, 2 = Near home, 3 = Regular
         fireReports.removeIf(f -> f.x == x && f.y == y);
         fireReports.add(new FireReport(x, y, priorityLevel));
-        System.out.printf("🔥 %s fire added at (%d,%d)%n",
+        System.out.printf("🖥️  %s fire added at (%d,%d)%n",
             priorityLevel == 1 ? "HOUSE" : (priorityLevel == 2 ? "NEAR-HOME" : "NO-NEAR-HOME") , x, y);
     }
 
@@ -138,7 +138,7 @@ public class DataCenterAgent extends Agent {
                         int priority = nearHome ? 2 : 3;
                         addFireWithPriority(x, y, priority);
                     } else {
-                        System.out.println("🔍 Duplicate fire at (" + x + "," + y + 
+                        System.out.println("🖥️  Duplicate fire at (" + x + "," + y + 
                                         ") already reported by homeowner");
                     }
                 } catch (NumberFormatException e) {
@@ -154,13 +154,13 @@ public class DataCenterAgent extends Agent {
         int y = Integer.parseInt(parts[1].trim());
         
         fireReports.removeIf(f -> f.x == x && f.y == y);
-        System.out.println("➖ Fire removed at (" + x + "," + y + ")");
+        System.out.println("🖥️  Fire removed at (" + x + "," + y + ")");
         checkForReturnCommand();
     }
 
     private void sendNextTarget() {
         if (fireReports.isEmpty() || firefighterX == -1) {
-            System.out.println("ℹ No active fires");
+            System.out.println("🖥️  No active fires");
             return;
         }
 
@@ -177,7 +177,7 @@ public class DataCenterAgent extends Agent {
                 default -> "Regular fire (LOW PRIORITY)";
             };
             
-            System.out.printf("\n🎯 Selected target: (%d,%d) | %s | Distance: %d%n",
+            System.out.printf("\n🖥️  Selected target: (%d,%d) | %s | Distance: %d%n",
                 nextFire.x, nextFire.y, priorityType, 
                 manhattanDistance(nextFire.x, nextFire.y, firefighterX, firefighterY));
 
@@ -209,7 +209,7 @@ public class DataCenterAgent extends Agent {
     }
     private void checkForReturnCommand() {
         if (fireReports.isEmpty()) {
-            System.out.println("📭 No more fires - telling firefighter to return home");
+            System.out.println("🖥️  No more fires - telling firefighter to return home");
             
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.setContent("RETURN_HOME");
@@ -225,7 +225,7 @@ public class DataCenterAgent extends Agent {
                     msg.addReceiver(desc.getName());
                 }
                 send(msg);
-                System.out.println("📤 Sent return command to firefighter");
+                System.out.println("🖥️  Sent return command to firefighter");
                 
             } catch (FIPAException e) {
                 e.printStackTrace();
