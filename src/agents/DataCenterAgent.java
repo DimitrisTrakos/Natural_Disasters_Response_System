@@ -2,6 +2,7 @@ package agents;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
+import utils.SyncOutput;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.*;
@@ -70,7 +71,7 @@ public class DataCenterAgent extends Agent {
         String[] parts = content.replace("POSITION:", "").split(",");
         firefighterX = Integer.parseInt(parts[0]);
         firefighterY = Integer.parseInt(parts[1]);
-        System.out.println("🖥️  Firefighter position updated to (" + firefighterX + "," + firefighterY + ")");
+        SyncOutput.println("🖥️  Firefighter position updated to (" + firefighterX + "," + firefighterY + ")");
     }
 
     private void processHomeDanger(String content) {
@@ -94,7 +95,7 @@ public class DataCenterAgent extends Agent {
                     .anyMatch(f -> f.x == x && f.y == y && f.priority == 3);
                 
                 if (droneReported) {
-                    System.out.println("🖥️  Upgrading priority for fire at (" + x + "," + y + 
+                    SyncOutput.println("🖥️  Upgrading priority for fire at (" + x + "," + y + 
                                      ") from drone report to home priority");
                     fireReports.removeIf(f -> f.x == x && f.y == y);
                 }
@@ -138,7 +139,7 @@ public class DataCenterAgent extends Agent {
                         int priority = nearHome ? 2 : 3;
                         addFireWithPriority(x, y, priority);
                     } else {
-                        System.out.println("🖥️  Duplicate fire at (" + x + "," + y + 
+                        SyncOutput.println("🖥️  Duplicate fire at (" + x + "," + y + 
                                         ") already reported by homeowner");
                     }
                 } catch (NumberFormatException e) {
@@ -154,13 +155,13 @@ public class DataCenterAgent extends Agent {
         int y = Integer.parseInt(parts[1].trim());
         
         fireReports.removeIf(f -> f.x == x && f.y == y);
-        System.out.println("🖥️  Fire removed at (" + x + "," + y + ")");
+        SyncOutput.println("🖥️  Fire removed at (" + x + "," + y + ")");
         checkForReturnCommand();
     }
 
     private void sendNextTarget() {
         if (fireReports.isEmpty() || firefighterX == -1) {
-            System.out.println("🖥️  No active fires");
+            SyncOutput.println("🖥️  No active fires");
             return;
         }
 
@@ -209,7 +210,7 @@ public class DataCenterAgent extends Agent {
     }
     private void checkForReturnCommand() {
         if (fireReports.isEmpty()) {
-            System.out.println("🖥️  No more fires - telling firefighter to return home");
+            SyncOutput.println("🖥️  No more fires - telling firefighter to return home");
             
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.setContent("RETURN_HOME");
@@ -225,7 +226,7 @@ public class DataCenterAgent extends Agent {
                     msg.addReceiver(desc.getName());
                 }
                 send(msg);
-                System.out.println("🖥️  Sent return command to firefighter");
+                SyncOutput.println("🖥️  Sent return command to firefighter");
                 
             } catch (FIPAException e) {
                 e.printStackTrace();

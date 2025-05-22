@@ -8,7 +8,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import mapGrid.MapGrid;
 import mapGrid.GridCell;
-
+import utils.SyncOutput;
 public class HomeOwnerAgent extends Agent {
 
     private MapGrid map;
@@ -18,14 +18,14 @@ public class HomeOwnerAgent extends Agent {
 
     @Override
     protected void setup() {
-        System.out.println("🏠 " + getLocalName() + " initialized");
+        SyncOutput.println("🏠 " + getLocalName() + " initialized");
 
         Object[] args = getArguments();
         if (args != null && args.length > 2 && args[0] instanceof MapGrid) {
             map = (MapGrid) args[0];
             homeX = (int) args[1];
             homeY = (int) args[2];
-            System.out.println("📍 Home located at (" + homeX + "," + homeY + ")");
+            SyncOutput.println("📍 Home located at (" + homeX + "," + homeY + ")");
         } else {
             System.err.println("❌ Error: Missing home coordinates");
             doDelete();
@@ -99,7 +99,7 @@ public class HomeOwnerAgent extends Agent {
             msg.addReceiver(dataCenterAID);
             msg.setContent("HOME_DANGER:" + homeX + "," + homeY + "\n" + dangerInfo);
             send(msg);
-            System.out.println("👤 Sent fire alert to DataCenter:\n" + dangerInfo);
+            SyncOutput.println("👤 Sent fire alert to DataCenter:\n" + dangerInfo);
         }
     }
 

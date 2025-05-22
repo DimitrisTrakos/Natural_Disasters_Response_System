@@ -8,12 +8,12 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import mapGrid.MapGrid;
+import utils.SyncOutput;
 import mapGrid.GridCell;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-
 public class DroneAgent extends Agent {
 
     private MapGrid map;
@@ -25,7 +25,7 @@ public class DroneAgent extends Agent {
 
     @Override
     protected void setup() {
-        System.out.println("🚁 " + getLocalName() + " launched and initializing...");
+        SyncOutput.println("🚁 " + getLocalName() + " launched and initializing...");
 
         registerWithDF();
 
@@ -44,7 +44,7 @@ public class DroneAgent extends Agent {
 
         try {
             DFService.register(this, dfd);
-            System.out.println("📝 " + getLocalName() + " successfully registered with DF");
+            SyncOutput.println("📝 " + getLocalName() + " successfully registered with DF");
         } catch (FIPAException e) {
             System.err.println("❌ " + getLocalName() + " DF registration failed");
             e.printStackTrace();
@@ -58,9 +58,9 @@ public class DroneAgent extends Agent {
             this.x = (int) args[1]; 
             this.y = (int) args[2];
             updateMapPosition();
-            System.out.println("🚁 " + getLocalName() + " initialized at position (" + x + "," + y + ")");
+            SyncOutput.println("🚁 " + getLocalName() + " initialized at position (" + x + "," + y + ")");
         } else {
-            System.out.println("❌ " + getLocalName() + ": No valid map received - terminating");
+            SyncOutput.println("❌ " + getLocalName() + ": No valid map received - terminating");
             doDelete();
         }
     }
@@ -105,11 +105,11 @@ public class DroneAgent extends Agent {
                                           .append("\n");
                                 reportedFires.add(fireKey);
                                 newFiresDetected++;
-                                System.out.println("🚁 NEW FIRE at (" + scanX + "," + scanY + 
+                                SyncOutput.println("🚁 NEW FIRE at (" + scanX + "," + scanY + 
                                                  ") - " + (cell.isHouse ? "House Fire!" : "Regular Fire"));
                             } else {
                                 duplicateFires++;
-                                System.out.println("🚁 Already reported fire at (" + scanX + "," + scanY + ")");
+                                SyncOutput.println("🚁 Already reported fire at (" + scanX + "," + scanY + ")");
                             }
                         }
                     }
@@ -118,12 +118,12 @@ public class DroneAgent extends Agent {
 
             if (newFiresDetected > 0) {
                 sendFireReport(fireReport.toString(), newFiresDetected);
-                System.out.println("🚁 Fire Report: " + newFiresDetected + " new | " + 
+                SyncOutput.println("🚁 Fire Report: " + newFiresDetected + " new | " + 
                                  duplicateFires + " duplicates");
             } else if (duplicateFires > 0) {
-                System.out.println("🚁 Scan complete - " + duplicateFires + " known fires in vicinity");
+                SyncOutput.println("🚁 Scan complete - " + duplicateFires + " known fires in vicinity");
             } else {
-                System.out.println("🚁 Scan complete - No fires detected");
+                SyncOutput.println("🚁 Scan complete - No fires detected");
             }
         }
 
@@ -137,9 +137,9 @@ public class DroneAgent extends Agent {
                 msg.addReceiver(dataCenterAID);
                 msg.setContent(report);
                 send(msg);
-                System.out.println("🚁 Sent report with " + fireCount + " fires to DataCenter");
+                SyncOutput.println("🚁 Sent report with " + fireCount + " fires to DataCenter");
             } else {
-                System.out.println("⚠ Couldn't send fire report - DataCenter unavailable");
+                SyncOutput.println("⚠ Couldn't send fire report - DataCenter unavailable");
             }
         }
 
@@ -215,7 +215,7 @@ public class DroneAgent extends Agent {
             x = newX;
             y = newY;
             updateMapPosition();
-            System.out.println("🚁 Moved to (" + x + "," + y + ")");
+            SyncOutput.println("🚁 Moved to (" + x + "," + y + ")");
         }
     }
 

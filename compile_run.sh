@@ -1,2 +1,7 @@
-javac -cp lib/jade.jar -d out/ src/**/*.java
-java -cp "lib/jade.jar:out" main.Main
+javac -cp "lib/jade.jar:out" -d out/ src/**/*.java
+
+if [ $# -eq 0 ]; then
+    java -cp "lib/jade.jar:out" main.Main
+else
+    java -cp "lib/jade.jar:out" main.Main "$@"
+fi

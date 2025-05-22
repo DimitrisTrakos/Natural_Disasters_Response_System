@@ -111,7 +111,7 @@ src/
    ```
 3. **Execute/Run**:
    ```bash
-   javac src/main/Main.java src/mapGrid/*.java src/utils/*.java -d out/
-   java -cp out/ main.Main
+   chmod +x compile_run.sh
+   ./compile_run
    ```
    Or just run it via Run button on your IDE  😊 😊 🚀

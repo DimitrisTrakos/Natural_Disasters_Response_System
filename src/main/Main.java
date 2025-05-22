@@ -16,19 +16,41 @@ import utils.HouseUtils;
 import jade.wrapper.ContainerController;
 
 public class Main {
+    private static final int DEFAULT_WIDTH = 12;
+    private static final int DEFAULT_HEIGHT = 12;
+    private static final int DEFAULT_HOUSES = 5;
+    private static final int DEFAULT_NUM_TREES = 100;
+    private static final int DEFAULT_CLUSTERS = 4;
+    private static final int DEFAULT_CLUSTER_SIZE = 30;
+    private static final int DEFAULT_CLUSTER_RADIUS = 3;
+
+    private static int parseArg(String[] args, int index, int defaultValue) {
+        if (args.length > index) {
+            try {
+                return Integer.parseInt(args[index]);
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid argument at index " + index + ", using default: " + defaultValue);
+            }
+        }
+        return defaultValue;
+    }
 
     public static void main(String[] args) throws InterruptedException {
-        int width = 12;
-        int height = 12;
-        int numberOfHouses = 5;
+        int width = parseArg(args, 0, DEFAULT_WIDTH);
+        int height = parseArg(args, 1, DEFAULT_HEIGHT);
+        int numberOfHouses = parseArg(args, 2, DEFAULT_HOUSES);
+        int numTrees = parseArg(args, 3, DEFAULT_NUM_TREES);
+        int clusters = parseArg(args, 4, DEFAULT_CLUSTERS);
+        int clusterSize = parseArg(args, 5, DEFAULT_CLUSTER_SIZE);
+        int clusterRadius = parseArg(args, 6, DEFAULT_CLUSTER_RADIUS);
         
         MapGrid map = new MapGrid(width, height);
         int droneStartX = 0, droneStartY = 0;        
         int firefighterStartX = 0, firefighterStartY = height - 1; 
 
-        ForestUtils.generateForest(map, 100);
+        ForestUtils.generateForest(map, numTrees);
 
-        ForestUtils.generateForestClusters(map, 4, 30, 3);
+        ForestUtils.generateForestClusters(map, clusters, clusterSize, clusterRadius);
         HouseUtils.generateHouses(map, numberOfHouses);
         List<int[]> houseLocations = map.getHouseLocations();
 
