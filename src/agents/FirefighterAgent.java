@@ -8,9 +8,15 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.*;
 import jade.domain.FIPAException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import agents.DataCenterAgent.FireReport;
 import mapGrid.MapGrid;
 import mapGrid.GridCell;
 import utils.AStarPathfinder;
@@ -26,6 +32,7 @@ public class FirefighterAgent extends Agent {
     private boolean isExtinguishing = false;
     private boolean skipNextStep = false;
     private boolean returningHome = false;
+    private String id;
 
     @Override
     protected void setup() {
@@ -38,6 +45,7 @@ public class FirefighterAgent extends Agent {
             this.y = (int) args[2]; 
             this.startX = x;         
             this.startY = y;
+            this.id = getLocalName();
         
         } else {
             System.err.println("❌ Error: No map provided!");
@@ -51,6 +59,7 @@ public class FirefighterAgent extends Agent {
         SyncOutput.println("🚒 Starting at position (" + startX + "," + startY + ")");
 
         registerWithDF();
+
 
         addBehaviour(new TickerBehaviour(this, 1000) { 
             @Override
@@ -77,6 +86,8 @@ public class FirefighterAgent extends Agent {
             }
         });
     }
+
+
 
     private void registerWithDF() {
         DFAgentDescription dfd = new DFAgentDescription();
@@ -130,16 +141,25 @@ public class FirefighterAgent extends Agent {
     }
 
     private void moveToNextPosition() {
+        // Clear current position first
+        GridCell currentCell = map.getCell(x, y);
+        if (currentCell != null) {
+            currentCell.hasAgent = false;
+            currentCell.agentType = "";
+        }
+        
+        // Get next position
         int[] next = pathToFire.pop();
-        
-        map.getCell(x, y).hasAgent = false;
-        map.getCell(x, y).agentType = "";
-        
         x = next[0];
         y = next[1];
+        
+        // Update new position
         updateMapPosition();
         SyncOutput.println("🚒 Moved to (" + x + "," + y + ")");
-
+        
+        // Print map after movement
+        map.printMap();
+        
         if (pathToFire.isEmpty()) {
             if (returningHome) {
                 SyncOutput.println("🚒 Reached starting position");
@@ -174,14 +194,16 @@ public class FirefighterAgent extends Agent {
 
     private void updateMapPosition() {
         GridCell cell = map.getCell(x, y);
-        cell.hasAgent = true;
-        cell.agentType = "firefighter";
+        if (cell != null) {
+            cell.hasAgent = true;
+            cell.agentType = "firefighter";
+        }
     }
 
     private void sendPositionUpdate() {
         try {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.setContent("POSITION:" + x + "," + y);
+            msg.setContent("POSITION:" + id + "," + x + "," + y);
             
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
@@ -200,8 +222,8 @@ public class FirefighterAgent extends Agent {
     private void sendExtinguishedUpdate(int x, int y) {
         try {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.setContent("EXTINGUISHED:" + x + "," + y);
-            
+            msg.setContent("EXTINGUISHED:" + x + "," + y + "," + id);
+
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
             sd.setType("data-center");
@@ -220,7 +242,7 @@ public class FirefighterAgent extends Agent {
     protected void takeDown() {
         try {
             DFService.deregister(this);
-            System.out.println("🛑 Firefighter " + getLocalName() + " shutting down");
+            System.out.println("🚒  Firefighter " + getLocalName() + " shutting down");
         } catch (FIPAException e) {
             e.printStackTrace();
         }

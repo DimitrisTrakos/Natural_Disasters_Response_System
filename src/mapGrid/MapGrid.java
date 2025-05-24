@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import utils.SyncOutput;
+
 public class MapGrid {
     private final int width;
     private final int height;
@@ -91,43 +93,43 @@ public class MapGrid {
     }
 
     public synchronized void printMap() {
-        System.out.println("_________________________________\n");
+        SyncOutput.println("_________________________________\n");
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 GridCell cell = getCell(x, y);
                 
                 if(cell.hasAgent && cell.agentType.equals("firefighter") && cell.fireFighterExtinguishFire ) 
-                System.out.printf("💧🚒 ");
+                SyncOutput.printf("💧🚒 ");
                     
                     else if (cell.hasAgent) {
                         switch (cell.agentType) {
                             case "drone":
-                                System.out.printf("🚁 ");
+                                SyncOutput.printf("🚁 ");
                                 break;
                             case "firefighter":
-                                System.out.printf("🚒 ");
+                                SyncOutput.printf("🚒 ");
                                 break;
                             case "medic":
-                                System.out.printf("🚑 ");
+                                SyncOutput.printf("🚑 ");
                                 break;
                             default:
-                                System.out.printf("❓ ");
+                                SyncOutput.printf("❓ ");
                                 break;
                         }
                     } else if (cell.isOnFire) {
-                        System.out.printf("🔥 ");
+                        SyncOutput.printf("🔥 ");
                     } 
                     else if (cell.isHouse) {
-                        System.out.printf("🏠 ");
+                        SyncOutput.printf("🏠 ");
                     } else if (cell.isForest) {
-                        System.out.printf("🌲 ");
+                        SyncOutput.printf("🌲 ");
                     } else {
-                        System.out.printf("◻️ ");
+                        SyncOutput.printf("◻️ ");
                     }
                 }
-            System.out.println();
+            SyncOutput.println("");
         }
-        System.out.println("_________________________________\n");
+        SyncOutput.println("_________________________________\n");
     }
     public boolean inBounds(int x, int y) {
         return x >= 0 && x < width && y >= 0 && y < height;

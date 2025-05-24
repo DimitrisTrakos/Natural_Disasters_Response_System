@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Random;
 
 public class FireUtils {
- public static void igniteRandomForestCell(MapGrid map, Random rand, 
+    public static void igniteRandomForestCell(MapGrid map, Random rand, 
                                             int droneX, int droneY,
-                                            int firefighterX, int firefighterY,
+                                            List<int[]> firefighterPositions,
                                             List<int[]> houseLocations) {
         
         List<int[]> houseCells = new ArrayList<>();
@@ -18,8 +18,7 @@ public class FireUtils {
 
         for (int x = 0; x < map.getWidth(); x++) {
             for (int y = 0; y < map.getHeight(); y++) {
-                if ((x == droneX && y == droneY) || 
-                    (x == firefighterX && y == firefighterY)) {
+                if ((x == droneX && y == droneY) || isFirefighterPosition(x, y, firefighterPositions)) {
                     continue;
                 }
 
@@ -39,7 +38,7 @@ public class FireUtils {
             }
         }
 
-        // Weighted random selection (60% house, 30% near house, 10% regular)
+        // Weighted random selection (50% house, 20% near house, 30% regular)
         double probability = rand.nextDouble();
         int[] fireLocation = null;
 
@@ -60,9 +59,18 @@ public class FireUtils {
         }
     }
 
+    private static boolean isFirefighterPosition(int x, int y, List<int[]> firefighterPositions) {
+        for (int[] pos : firefighterPositions) {
+            if (pos[0] == x && pos[1] == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isNearHouse(int x, int y, List<int[]> houseLocations) {
         for (int[] house : houseLocations) {
-            if (Math.abs(house[0] - x) <0 && Math.abs(house[1] - y) <0) {
+            if (Math.abs(house[0] - x) <= 1 && Math.abs(house[1] - y) <= 1) {
                 return true;
             }
         }

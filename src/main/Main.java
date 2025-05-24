@@ -1,5 +1,6 @@
 package main;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -13,6 +14,7 @@ import mapGrid.MapGrid;
 import utils.ForestUtils;
 import utils.FireUtils;
 import utils.HouseUtils;
+import utils.SyncOutput;
 import jade.wrapper.ContainerController;
 
 public class Main {
@@ -45,8 +47,11 @@ public class Main {
         int clusterRadius = parseArg(args, 6, DEFAULT_CLUSTER_RADIUS);
         
         MapGrid map = new MapGrid(width, height);
-        int droneStartX = 0, droneStartY = 0;        
-        int firefighterStartX = 0, firefighterStartY = height - 1; 
+        int droneStartX = 0, droneStartY = 0;
+        List<int[]> firefighterPositions = new ArrayList<>();
+        firefighterPositions.add(new int[]{0, height-1});
+        firefighterPositions.add(new int[]{height-1, 0});  
+
 
         ForestUtils.generateForest(map, numTrees);
 
@@ -56,11 +61,14 @@ public class Main {
 
         map.getCell(droneStartX, droneStartY).isForest = false;
         map.getCell(droneStartX, droneStartY).isHouse = false;
-        map.getCell(firefighterStartX, firefighterStartY).isForest = false;
-        map.getCell(firefighterStartX, firefighterStartY).isHouse = false;
+        for (int[] pos : firefighterPositions) {
+            System.out.println("🚒 Firefighter starting position: (" + pos[0] + "," + pos[1] + ")");
+            map.getCell(pos[0], pos[1]).isForest = false;
+        }
+
         FireUtils.igniteRandomForestCell(map, new Random(),
                 droneStartX, droneStartY,
-                firefighterStartX, firefighterStartY,
+                firefighterPositions,
                 houseLocations);
 
 
@@ -68,13 +76,13 @@ public class Main {
         map.printMap();
         map.spreadFire();
         System.out.println();
-        launchJadeAgents(map,droneStartX, droneStartY, firefighterStartX, firefighterStartY);
+        launchJadeAgents(map,droneStartX, droneStartY,firefighterPositions);
 
         
 
     }
 
-    private static void launchJadeAgents(MapGrid map,int droneX, int droneY, int firefighterX, int firefighterY) {
+    private static void launchJadeAgents(MapGrid map,int droneX, int droneY, List<int[]> firefighterPositions) {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
         p.setParameter(Profile.LOCAL_PORT, "2002");
@@ -84,7 +92,13 @@ public class Main {
         try {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
             container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map, droneX, droneY}).start();
-            container.createNewAgent("Firefighter", "agents.FirefighterAgent", new Object[]{map, firefighterX, firefighterY}).start();
+
+            for (int i = 0; i < firefighterPositions.size(); i++) {
+                int[] pos = firefighterPositions.get(i);
+                String agentName = "Firefighter" + (i + 1);
+                Object[] args = new Object[]{map, pos[0], pos[1]};
+                container.createNewAgent(agentName, "agents.FirefighterAgent", args).start();
+            }
 
             List<int[]> houseLocations = map.getHouseLocations();
             for (int i = 0; i < houseLocations.size(); i++) {
@@ -92,7 +106,7 @@ public class Main {
                 String agentName = "Homeowner" + (i + 1);
                 Object[] args = new Object[]{map, coords[0], coords[1]};
                 container.createNewAgent(agentName, "agents.HomeOwnerAgent", args).start();
-                System.out.println("👤 Created " + agentName + " for house at (" + coords[0] + "," + coords[1] + ")");
+                SyncOutput.println("👤 Created " + agentName + " for house at (" + coords[0] + "," + coords[1] + ")");
             }
 
         } catch (StaleProxyException e) {

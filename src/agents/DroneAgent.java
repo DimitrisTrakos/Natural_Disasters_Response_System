@@ -215,7 +215,12 @@ public class DroneAgent extends Agent {
             x = newX;
             y = newY;
             updateMapPosition();
-            SyncOutput.println("🚁 Moved to (" + x + "," + y + ")");
+            try{
+                Thread.sleep(10);
+                SyncOutput.println("🚁 Moved to (" + x + "," + y + ")");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
