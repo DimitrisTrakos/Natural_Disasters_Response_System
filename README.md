@@ -31,8 +31,10 @@ This simulation models an intelligent wildfire response system featuring:
 
 ### Drone Agent 🚁
 
-**Role:** Aerial Surveillance Unit**Behaviors:**
+**Role:** 
+Aerial Surveillance Unit
 
+**Behaviors:**
 - Systematic grid scanning pattern
 - Fire detection in 3x3 vision radius
 - Duplicate report prevention
@@ -41,8 +43,10 @@ This simulation models an intelligent wildfire response system featuring:
 
 ### Firefighter Agent 🚒
 
-**Role:** Fire Suppression Unit**Behaviors:**
+**Role:** 
+Fire Suppression Unit
 
+**Behaviors:**
 - Priority-based target acquisition
 - A* pathfinding navigation
 - Fire extinguishing protocol
@@ -52,8 +56,10 @@ This simulation models an intelligent wildfire response system featuring:
 
 ### Homeowner Agent 🏠
 
-**Role:** Residential Monitor**Behaviors:**
+**Role:** 
+Residential Monitor
 
+**Behaviors:**
 - 24/7 property monitoring
 - Immediate fire alerts (1x1 area)
 - Critical incident reporting
@@ -61,8 +67,10 @@ This simulation models an intelligent wildfire response system featuring:
 
 ### DataCenter Agent 🖥️
 
-**Role:** Command Center**Behaviors:**
+**Role:** 
+Command Center
 
+**Behaviors:**
 - Fire priority triage:
   1. House fires 🔥🏠 (Critical)
   2. Near-house fires 🔥 (High)
