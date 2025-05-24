@@ -175,6 +175,7 @@ public class DataCenterAgent extends Agent {
             return;
         }
     
+        
         // Create a copy to avoid concurrent modification
         List<FireReport> activeFires = new ArrayList<>(fireReports);
         
