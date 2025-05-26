@@ -150,7 +150,6 @@ public class MapGrid {
 
                 if (cell.hasAgent && cell.agentType.equals("firefighter") && cell.fireFighterExtinguishFire)
                     SyncOutput.printf("💧🚒 ");
-
                 else if (cell.hasAgent) {
                     switch (cell.agentType) {
                         case "drone":
@@ -166,8 +165,11 @@ public class MapGrid {
                             SyncOutput.printf("❓ ");
                             break;
                     }
-                } else if (cell.isOnFire) {
+                } 
+                else if (cell.isOnFire && !cell.isHouse) {
                     SyncOutput.printf("🔥 ");
+                } else if (cell.isOnFire && cell.isHouse){
+                    SyncOutput.printf("🏠🔥 ");
                 } else if (cell.isHouse) {
                     SyncOutput.printf("🏠 ");
                 } else if (cell.isForest) {
