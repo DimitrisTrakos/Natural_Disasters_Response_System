@@ -19,6 +19,7 @@ import utils.ForestUtils;
 import utils.FireUtils;
 import utils.HouseUtils;
 import utils.SyncOutput;
+import utils.TeePrintStream;
 import jade.wrapper.ContainerController;
 
 public class Main {
@@ -45,9 +46,10 @@ public class Main {
         try {
             String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
             PrintStream fileOut = new PrintStream(new FileOutputStream("output_" + timestamp + ".txt"));
+            TeePrintStream tee = new TeePrintStream(System.out, fileOut);
 
-            System.setOut(fileOut); // Redirect standard output to the file
-            System.setErr(fileOut); // (Optional) Redirect error output too
+            System.setOut(tee);
+            System.setErr(tee); // Optional: redirect errors too
         } catch (FileNotFoundException e) {
             System.err.println("❌ Could not redirect output: " + e.getMessage());
         }
