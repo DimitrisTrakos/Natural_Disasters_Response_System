@@ -3,7 +3,11 @@ package main;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -38,6 +42,16 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        try {
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            PrintStream fileOut = new PrintStream(new FileOutputStream("output_" + timestamp + ".txt"));
+
+            System.setOut(fileOut); // Redirect standard output to the file
+            System.setErr(fileOut); // (Optional) Redirect error output too
+        } catch (FileNotFoundException e) {
+            System.err.println("❌ Could not redirect output: " + e.getMessage());
+        }
+
         int width = parseArg(args, 0, DEFAULT_WIDTH);
         int height = parseArg(args, 1, DEFAULT_HEIGHT);
         int numberOfHouses = parseArg(args, 2, DEFAULT_HOUSES);
