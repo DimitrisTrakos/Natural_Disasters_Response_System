@@ -148,16 +148,26 @@ public class FirefighterAgent extends Agent {
             currentCell.agentType = "";
         }
         
-        // Get next position
         int[] next = pathToFire.pop();
-        x = next[0];
-        y = next[1];
+        int nextX = next[0];
+        int nextY = next[1];
         
-        // Update new position
+        
+        GridCell nextCell = map.getCell(nextX, nextY);
+        if (nextCell != null && nextCell.isOnFire) {
+            x = nextX;
+            y = nextY;
+            updateMapPosition();
+            extinguishFire();
+            pathToFire.clear();
+            return;
+        }
+        
+        x = nextX;
+        y = nextY;
         updateMapPosition();
         SyncOutput.println("🚒 Moved to (" + x + "," + y + ")");
         
-        // Print map after movement
         map.printMap();
         
         if (pathToFire.isEmpty()) {

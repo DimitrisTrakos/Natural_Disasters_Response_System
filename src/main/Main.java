@@ -50,7 +50,7 @@ public class Main {
         int droneStartX = 0, droneStartY = 0;
         List<int[]> firefighterPositions = new ArrayList<>();
         firefighterPositions.add(new int[] { 0, height - 1 });
-        // firefighterPositions.add(new int[] { height - 1, 0 });
+        firefighterPositions.add(new int[] { height - 1, 0 });
 
         ForestUtils.generateForest(map, numTrees);
 

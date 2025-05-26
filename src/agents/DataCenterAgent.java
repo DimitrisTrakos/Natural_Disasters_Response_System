@@ -195,7 +195,7 @@ public class DataCenterAgent extends Agent {
                     nearestFirefighter, fire.x, fire.y, priorityType, distance);
     
                 sendTargetToFirefighter(nearestFirefighter, fire.x, fire.y);
-                return; // Assign one target at a time
+                return; 
             }
         }
     }
