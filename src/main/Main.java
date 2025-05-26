@@ -45,19 +45,22 @@ public class Main {
         int clusters = parseArg(args, 4, DEFAULT_CLUSTERS);
         int clusterSize = parseArg(args, 5, DEFAULT_CLUSTER_SIZE);
         int clusterRadius = parseArg(args, 6, DEFAULT_CLUSTER_RADIUS);
-        
+
         MapGrid map = new MapGrid(width, height);
         int droneStartX = 0, droneStartY = 0;
         List<int[]> firefighterPositions = new ArrayList<>();
-        firefighterPositions.add(new int[]{0, height-1});
-        firefighterPositions.add(new int[]{height-1, 0});  
-
+        firefighterPositions.add(new int[] { 0, height - 1 });
+        // firefighterPositions.add(new int[] { height - 1, 0 });
 
         ForestUtils.generateForest(map, numTrees);
 
         ForestUtils.generateForestClusters(map, clusters, clusterSize, clusterRadius);
         HouseUtils.generateHouses(map, numberOfHouses);
         List<int[]> houseLocations = map.getHouseLocations();
+
+        map.setSpreadProbability(0.1); // 60% chance of spread
+        map.igniteRandomFires(2); // Start with 5 random fires
+        map.startFireSpreading(10000); // Spread fire every 1000ms (1 sec)
 
         map.getCell(droneStartX, droneStartY).isForest = false;
         map.getCell(droneStartX, droneStartY).isHouse = false;
@@ -71,18 +74,14 @@ public class Main {
                 firefighterPositions,
                 houseLocations);
 
-
-        
         map.printMap();
         map.spreadFire();
         System.out.println();
-        launchJadeAgents(map,droneStartX, droneStartY,firefighterPositions);
-
-        
+        launchJadeAgents(map, droneStartX, droneStartY, firefighterPositions);
 
     }
 
-    private static void launchJadeAgents(MapGrid map,int droneX, int droneY, List<int[]> firefighterPositions) {
+    private static void launchJadeAgents(MapGrid map, int droneX, int droneY, List<int[]> firefighterPositions) {
         Runtime rt = Runtime.instance();
         Profile p = new ProfileImpl();
         p.setParameter(Profile.LOCAL_PORT, "2002");
@@ -91,12 +90,12 @@ public class Main {
 
         try {
             container.createNewAgent("DataCenter", "agents.DataCenterAgent", null).start();
-            container.createNewAgent("Drone", "agents.DroneAgent", new Object[]{map, droneX, droneY}).start();
+            container.createNewAgent("Drone", "agents.DroneAgent", new Object[] { map, droneX, droneY }).start();
 
             for (int i = 0; i < firefighterPositions.size(); i++) {
                 int[] pos = firefighterPositions.get(i);
                 String agentName = "Firefighter" + (i + 1);
-                Object[] args = new Object[]{map, pos[0], pos[1]};
+                Object[] args = new Object[] { map, pos[0], pos[1] };
                 container.createNewAgent(agentName, "agents.FirefighterAgent", args).start();
             }
 
@@ -104,7 +103,7 @@ public class Main {
             for (int i = 0; i < houseLocations.size(); i++) {
                 int[] coords = houseLocations.get(i);
                 String agentName = "Homeowner" + (i + 1);
-                Object[] args = new Object[]{map, coords[0], coords[1]};
+                Object[] args = new Object[] { map, coords[0], coords[1] };
                 container.createNewAgent(agentName, "agents.HomeOwnerAgent", args).start();
                 SyncOutput.println("👤 Created " + agentName + " for house at (" + coords[0] + "," + coords[1] + ")");
             }

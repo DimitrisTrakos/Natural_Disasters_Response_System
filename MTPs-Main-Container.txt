@@ -1,1 +1,1 @@
-http://localhost:7778/acc
+http://dhcp-160-40-55-52.iti.gr:7778/acc
