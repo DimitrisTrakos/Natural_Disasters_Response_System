@@ -122,9 +122,21 @@ src/
    chmod +x compile_run.sh
    ./compile_run
    ```
-   You can pass up to 7 parameters to customize the simulation:
+   **You can also pass up to 7 parameters to customize the simulation:**
+   
    ```bash
    chmod +x compile_run.sh
    ./compile_run <width> <height> <houses> <trees> <clusters> <clusterSize> <clusterRadius>
    ```
+   
+    | Parameter       | Description                               | Default Value |
+    | --------------- | ----------------------------------------- | ------------- |
+    | `width`         | Width of the map grid                     | 12            |
+    | `height`        | Height of the map grid                    | 12            |
+    | `houses`        | Number of houses to generate              | 5             |
+    | `trees`         | Total number of individual trees          | 100           |
+    | `clusters`      | Number of forest clusters                 | 4             |
+    | `clusterSize`   | Number of trees in each cluster           | 30            |
+    | `clusterRadius` | Max radius around cluster center (spread) | 3             |
+
  
