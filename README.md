@@ -122,4 +122,9 @@ src/
    chmod +x compile_run.sh
    ./compile_run
    ```
-   Or just run it via Run button on your IDE  😊 😊 🚀
+   You can pass up to 7 parameters to customize the simulation:
+   ```bash
+   chmod +x compile_run.sh
+   ./compile_run <width> <height> <houses> <trees> <clusters> <clusterSize> <clusterRadius>
+   ```
+ 
